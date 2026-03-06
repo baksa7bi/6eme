@@ -189,30 +189,12 @@ class _HomePageState extends State<HomePage> {
                             // Background media
                             Positioned.fill(
                               child: Opacity(
-                                opacity: 0.6,
+                                opacity: 1.0,
                                 child: item['type'] == 'video'
                                   ? _VideoBackground(url: item['url']!)
-                                  : Image.network(item['url']!, fit: BoxFit.cover), 
-                              ),
-                            ),
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    item['title']!,
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor, 
-                                      fontSize: 30, 
-                                      fontWeight: FontWeight.bold
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    item['subtitle']!,
-                                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                                  ),
-                                ],
+                                  : (item['url']!.startsWith('assets/') 
+                                      ? Image.asset(item['url']!, fit: BoxFit.cover)
+                                      : Image.network(item['url']!, fit: BoxFit.cover)), 
                               ),
                             ),
                             // Edit button for Content Manager

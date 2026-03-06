@@ -159,24 +159,17 @@ class ApiService {
     return [
       {
         'id': 1,
-        'title': 'HAPPY HOUR',
-        'subtitle': '-50% sur le 2ème café',
+        'title': 'BUFFET RAMADAN 2',
+        'subtitle': '',
         'type': 'image',
-        'url': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
+        'url': 'assets/images/BUFFET RAMADAN (2).jpg.jpeg',
       },
       {
         'id': 2,
-        'title': 'NOUVEAU',
-        'subtitle': 'Découvrez nos gâteaux fait maison',
-        'type': 'video',
-        'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-      },
-      {
-        'id': 3,
-        'title': 'PETIT DÉJEUNER',
-        'subtitle': 'Menu complet à 35 DH',
+        'title': 'BUFFET RAMADAN',
+        'subtitle': '',
         'type': 'image',
-        'url': 'https://images.unsplash.com/photo-1447078806655-40579c2520d6',
+        'url': 'assets/images/BUFFET RAMADAN.jpg.jpeg',
       },
     ];
   }
