@@ -4,6 +4,7 @@ class User {
   final String name;
   final String? phone;
   final String? address;
+  final String role; // 'client', 'manager', 'admin'
 
   User({
     required this.id,
@@ -11,6 +12,7 @@ class User {
     required this.name,
     this.phone,
     this.address,
+    this.role = 'client',
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class User {
       name: json['name'],
       phone: json['phone'],
       address: json['address'],
+      role: json['role'] ?? 'client',
     );
   }
 
@@ -30,6 +33,9 @@ class User {
       'name': name,
       'phone': phone,
       'address': address,
+      'role': role,
     };
   }
+
+  bool get isContentManager => role == 'manager' || role == 'admin';
 }

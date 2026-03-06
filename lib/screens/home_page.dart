@@ -1,12 +1,19 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/cart_provider.dart';
 import 'reservation_page.dart';  // Access to ReservationPage if needed
 import '../models/cafe.dart'; // To access cafe data if needed
 import '../providers/theme_provider.dart';
 import 'app_drawer.dart';
 import 'cafe_detail_page.dart';
+import 'register_page.dart';
+import 'search_page.dart';
 import '../services/api_service.dart';
+import '../providers/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,20 +26,30 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentCarouselIndex = 0;
 
-  final List<Map<String, String>> _carouselItems = [
-    {
-      'title': 'HAPPY HOUR',
-      'subtitle': '-50% sur le 2ème café',
-    },
-    {
-      'title': 'NOUVEAU',
-      'subtitle': 'Découvrez nos gâteaux fait maison',
-    },
-    {
-      'title': 'PETIT DÉJEUNER',
-      'subtitle': 'Menu complet à 35 DH',
-    },
-  ];
+  List<Map<String, dynamic>> _carouselItems = [];
+  bool _isLoadingSliders = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSliders();
+  }
+
+  Future<void> _loadSliders() async {
+    try {
+      final sliders = await ApiService.getSliders();
+      if (mounted) {
+        setState(() {
+          _carouselItems = sliders;
+          _isLoadingSliders = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingSliders = false);
+      }
+    }
+  }
 
   final List<Map<String, dynamic>> _categories = [
     {'name': 'BOISSONS\nCHAUDES', 'icon': Icons.coffee},
@@ -127,6 +144,12 @@ class _HomePageState extends State<HomePage> {
                           border: InputBorder.none,
                           hintStyle: TextStyle(color: Colors.grey[600]),
                         ),
+                        onSubmitted: (value) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SearchPage(initialQuery: value)),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -141,12 +164,15 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Carousel / Banner (moved up for better flow)
-            SizedBox(
-              height: 220,
-              width: double.infinity,
-              child: Stack(
-                children: [
-                  PageView.builder(
+            if (_isLoadingSliders)
+              const SizedBox(height: 220, child: Center(child: CircularProgressIndicator()))
+            else if (_carouselItems.isNotEmpty)
+              SizedBox(
+                height: 220,
+                width: double.infinity,
+                child: Stack(
+                  children: [
+                    PageView.builder(
                     itemCount: _carouselItems.length,
                     onPageChanged: (index) {
                       setState(() {
@@ -160,11 +186,13 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.black,
                         child: Stack(
                           children: [
-                            // Background image placeholder
+                            // Background media
                             Positioned.fill(
                               child: Opacity(
                                 opacity: 0.6,
-                                child: Container(color: Colors.black), 
+                                child: item['type'] == 'video'
+                                  ? _VideoBackground(url: item['url']!)
+                                  : Image.network(item['url']!, fit: BoxFit.cover), 
                               ),
                             ),
                             Center(
@@ -187,6 +215,22 @@ class _HomePageState extends State<HomePage> {
                                 ],
                               ),
                             ),
+                            // Edit button for Content Manager
+                            Consumer<AuthProvider>(
+                              builder: (context, auth, child) {
+                                if (auth.user?.isContentManager ?? false) {
+                                  return Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.white),
+                                      onPressed: () => _editSliderItem(index),
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
                           ],
                         ),
                       );
@@ -208,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -321,50 +365,61 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 32),
 
             // Loyalty / Banner
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+            Consumer<AuthProvider>(
+              builder: (context, auth, child) {
+                if (auth.isAuthenticated) return const SizedBox.shrink();
+                
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Rejoignez le Club',
+                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Cumulez des points et profitez d\'offres exclusives.',
+                                style: TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RegisterPage()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Theme.of(context).primaryColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          ),
+                          child: const Text('S\'inscrire'),
+                        ),
+                      ],
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Rejoignez le Club',
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Cumulez des points et profitez d\'offres exclusives.',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Theme.of(context).primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      ),
-                      child: const Text('S\'inscrire'),
-                    ),
-                  ],
-                ),
-              ),
+                );
+              },
             ),
 
             const SizedBox(height: 40),
@@ -424,5 +479,129 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  void _editSliderItem(int index) {
+    // Show dialog to edit slider item
+    final item = _carouselItems[index];
+    final titleController = TextEditingController(text: item['title']);
+    final subtitleController = TextEditingController(text: item['subtitle']);
+    
+    File? pickedImage;
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Modifier le slider'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Titre')),
+                  TextField(controller: subtitleController, decoration: const InputDecoration(labelText: 'Sous-titre')),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () async {
+                      final picker = ImagePicker();
+                      final image = await picker.pickImage(source: ImageSource.gallery);
+                      if (image != null) {
+                        setDialogState(() {
+                          pickedImage = File(image.path);
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 100,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: pickedImage != null
+                          ? Image.file(pickedImage!, fit: BoxFit.cover)
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.add_photo_alternate, color: Colors.grey),
+                                Text(item['url'] != null && item['url'].toString().isNotEmpty ? "Changer l'image/vidéo" : "Ajouter une image", style: const TextStyle(fontSize: 12, color: Colors.grey))
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: isSaving ? null : () => Navigator.pop(context), child: const Text('Annuler')),
+              ElevatedButton(
+                onPressed: isSaving ? null : () async {
+                  setDialogState(() => isSaving = true);
+                  
+                  final success = await ApiService.updateSliderItem(
+                    item['id'], 
+                    titleController.text, 
+                    subtitleController.text,
+                    imageFile: pickedImage,
+                  );
+                  
+                  if (success && mounted) {
+                    Navigator.pop(context);
+                    _loadSliders(); // Reload all sliders to get the new URLs
+                  } else {
+                    setDialogState(() => isSaving = false);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de la modification')));
+                    }
+                  }
+                },
+                child: isSaving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Enregistrer'),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+}
+
+class _VideoBackground extends StatefulWidget {
+  final String url;
+  const _VideoBackground({required this.url});
+
+  @override
+  State<_VideoBackground> createState() => _VideoBackgroundState();
+}
+
+class _VideoBackgroundState extends State<_VideoBackground> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
+      ..initialize().then((_) {
+        _controller.setLooping(true);
+        _controller.setVolume(0);
+        _controller.play();
+        setState(() {});
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller.value.isInitialized) {
+      return VideoPlayer(_controller);
+    }
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

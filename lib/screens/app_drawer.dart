@@ -7,6 +7,12 @@ import 'login_page.dart';
 import 'anniversary_page.dart';
 import 'orders_page.dart';
 import 'my_reservations_page.dart';
+import '../models/menu_item.dart';
+import '../services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'add_product_page.dart';
+import 'add_event_page.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -100,6 +106,21 @@ class AppDrawer extends StatelessWidget {
                 _buildMenuItem(context, Icons.info_outline, 'À propos', () {}),
 
                 if (auth.isAuthenticated) ...[
+                  if (auth.user?.isContentManager ?? false) ...[
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('GESTION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                    ),
+                    _buildMenuItem(context, Icons.add_box_outlined, 'Ajouter un Produit', () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AddProductPage()));
+                    }),
+                    _buildMenuItem(context, Icons.event, 'Ajouter un Évènement', () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
+                    }),
+                  ],
                   const Divider(),
                   _buildMenuItem(context, Icons.logout, 'Se déconnecter', () {
                     auth.logout();
@@ -118,6 +139,21 @@ class AppDrawer extends StatelessWidget {
               children: [
                 Text('Version 1.0.0', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
               ],
+            ),
+          ),
+          // Instagram Icon
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.pink, size: 30),
+              onPressed: () async {
+                final Uri url = Uri.parse('https://www.instagram.com/6eme.cafe/');
+                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Impossible d\'ouvrir Instagram')),
+                  );
+                }
+              },
             ),
           ),
         ],

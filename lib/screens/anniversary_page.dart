@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/reservation_provider.dart';
 import '../models/reservation.dart';
+import '../models/cafe.dart';
+import '../services/api_service.dart';
 
 class AnniversaryPage extends StatefulWidget {
   const AnniversaryPage({super.key});
@@ -16,16 +18,32 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  String? _selectedCafe;
+  Cafe? _selectedCafe;
   final TextEditingController _guestsController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  final List<String> _cafes = [
-    'Café Central',
-    'Le Petit Oasis',
-    'Sushi Sky',
-    'The Green Garden',
-  ];
+  List<Cafe> _cafes = [];
+  bool _isLoadingCafes = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCafes();
+  }
+
+  Future<void> _loadCafes() async {
+    try {
+      final cafes = await ApiService.getCafes();
+      if (mounted) {
+        setState(() {
+          _cafes = cafes;
+          _isLoadingCafes = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingCafes = false);
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -78,17 +96,19 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
               const SizedBox(height: 30),
               
               // Cafe Selection
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Choisir un établissement',
-                  prefixIcon: const Icon(Icons.location_on),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                value: _selectedCafe,
-                items: _cafes.map((cafe) => DropdownMenuItem(value: cafe, child: Text(cafe))).toList(),
-                onChanged: (val) => setState(() => _selectedCafe = val),
-                validator: (val) => val == null ? 'Veuillez choisir un café' : null,
-              ),
+              _isLoadingCafes
+                  ? const Center(child: CircularProgressIndicator())
+                  : DropdownButtonFormField<Cafe>(
+                      decoration: InputDecoration(
+                        labelText: 'Choisir un établissement',
+                        prefixIcon: const Icon(Icons.location_on),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      value: _selectedCafe,
+                      items: _cafes.map((cafe) => DropdownMenuItem(value: cafe, child: Text(cafe.name))).toList(),
+                      onChanged: (val) => setState(() => _selectedCafe = val),
+                      validator: (val) => val == null ? 'Veuillez choisir un café' : null,
+                    ),
               const SizedBox(height: 20),
 
               // Date Selection
@@ -164,8 +184,8 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
                       // Save reservation
                       final reservation = Reservation(
                         id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        cafeId: _selectedCafe ?? 'unknown',
-                        cafeName: _selectedCafe ?? 'unknown',
+                        cafeId: _selectedCafe?.id ?? 'unknown',
+                        cafeName: _selectedCafe?.name ?? 'unknown',
                         userId: auth.user?.id ?? 'guest',
                         dateTime: DateTime(
                           _selectedDate!.year,

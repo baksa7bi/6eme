@@ -15,6 +15,10 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   intl: ^0.19.0
   http: ^1.2.1
+  video_player: ^2.8.2
+  image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +34,8 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/images/logo.png"
+  remove_alpha_ios: true
+  bg_color_ios: "#000000"
 
 flutter_native_splash:
   color: "#000000"

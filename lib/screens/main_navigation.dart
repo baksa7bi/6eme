@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'cafes_page.dart';
 import 'cart_page.dart';
 import 'anniversary_page.dart';
+import 'events_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -20,6 +21,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomePage(),
     const CafesPage(),
     const AnniversaryPage(),
+    const EventsPage(),
     const CartPage(),
   ];
 
@@ -49,6 +51,10 @@ class _MainNavigationState extends State<MainNavigation> {
               const BottomNavigationBarItem(
                 icon: Icon(Icons.cake_outlined),
                 label: 'Anniversaire',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.event_outlined),
+                label: 'Événements',
               ),
               BottomNavigationBarItem(
                 icon: Stack(

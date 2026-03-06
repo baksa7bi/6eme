@@ -7,9 +7,11 @@ import 'screens/main_navigation.dart';
 import 'providers/theme_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/reservation_provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
   
   // CMI does not require global SDK initialization like Stripe
 
