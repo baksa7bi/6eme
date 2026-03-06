@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey,
       drawer: const AppDrawer(),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(160 + MediaQuery.of(context).padding.top), // Increased height to 160 to fix 9px overflow
+        preferredSize: Size.fromHeight(142 + MediaQuery.of(context).padding.top),
         child: Container(
           color: Theme.of(context).primaryColor,
           padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10, left: 16, right: 16, bottom: 10),

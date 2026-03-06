@@ -10,7 +10,7 @@ class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
-  static const String baseUrl = 'http://192.168.100.40:8000/api'; 
+  static const String baseUrl = 'https://api.sfw-digital.com/api'; 
   
   static String? _token;
 
@@ -148,12 +148,37 @@ class ApiService {
       final response = await http.get(Uri.parse('$baseUrl/sliders'), headers: _headers);
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
-        return List<Map<String, dynamic>>.from(data);
+        if (data.isNotEmpty) {
+          return List<Map<String, dynamic>>.from(data);
+        }
       }
     } catch (e) {
       // Ignored
     }
-    return [];
+    // Fallback Mock Data
+    return [
+      {
+        'id': 1,
+        'title': 'HAPPY HOUR',
+        'subtitle': '-50% sur le 2ème café',
+        'type': 'image',
+        'url': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
+      },
+      {
+        'id': 2,
+        'title': 'NOUVEAU',
+        'subtitle': 'Découvrez nos gâteaux fait maison',
+        'type': 'video',
+        'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+      },
+      {
+        'id': 3,
+        'title': 'PETIT DÉJEUNER',
+        'subtitle': 'Menu complet à 35 DH',
+        'type': 'image',
+        'url': 'https://images.unsplash.com/photo-1447078806655-40579c2520d6',
+      },
+    ];
   }
 
   static Future<bool> updateSliderItem(int id, String title, String subtitle, {File? imageFile}) async {

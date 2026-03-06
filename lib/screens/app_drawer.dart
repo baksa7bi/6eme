@@ -13,6 +13,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'add_product_page.dart';
 import 'add_event_page.dart';
+import 'favorites_page.dart';
+import 'settings_page.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -86,7 +88,10 @@ class AppDrawer extends StatelessWidget {
                   Navigator.pop(context); // Close drawer, already on home or main nav
                   // Ideally navigate to tab 0 if using a global key for MainNavigation, but for now just closing is fine
                 }),
-                _buildMenuItem(context, Icons.favorite_border, 'Mes favoris', () {}),
+                _buildMenuItem(context, Icons.favorite_border, 'Mes favoris', () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+                }),
                 _buildMenuItem(context, Icons.inventory_2_outlined, 'Mes Commandes', () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
@@ -98,12 +103,14 @@ class AppDrawer extends StatelessWidget {
                 
                 const Divider(),
                 
-                _buildMenuItem(context, Icons.settings_outlined, 'Paramètres', () {}),
+                _buildMenuItem(context, Icons.settings_outlined, 'Paramètres', () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                }),
                 _buildMenuItem(context, Icons.brightness_6, 'Thème Sombre/Clair', () {
                    Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
                 }),
                 _buildMenuItem(context, Icons.help_outline, 'Aide & Support', () {}),
-                _buildMenuItem(context, Icons.info_outline, 'À propos', () {}),
 
                 if (auth.isAuthenticated) ...[
                   if (auth.user?.isContentManager ?? false) ...[
