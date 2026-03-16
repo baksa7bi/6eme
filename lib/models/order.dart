@@ -10,6 +10,8 @@ class OrderItem {
   final OrderType type;
   final String? cafeName; // Only for local
   final String status;
+  final String? agencyId;
+  final double? commissionAmount;
 
   OrderItem({
     required this.id,
@@ -19,5 +21,7 @@ class OrderItem {
     required this.type,
     this.cafeName,
     this.status = 'En attente',
+    this.agencyId,
+    this.commissionAmount,
   });
 }

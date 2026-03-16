@@ -4,7 +4,8 @@ class User {
   final String name;
   final String? phone;
   final String? address;
-  final String role; // 'client', 'manager', 'admin'
+  final String? role; // 'client', 'manager', 'admin', 'content_manager'
+  final int? cafeId;
 
   User({
     required this.id,
@@ -13,6 +14,7 @@ class User {
     this.phone,
     this.address,
     this.role = 'client',
+    this.cafeId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -20,9 +22,10 @@ class User {
       id: json['id'].toString(),
       email: json['email'],
       name: json['name'],
-      phone: json['phone'],
-      address: json['address'],
-      role: json['role'] ?? 'client',
+      phone: json['phone']?.toString(),
+      address: json['address']?.toString(),
+      role: json['role']?.toString() ?? 'client',
+      cafeId: json['cafe_id'] != null ? int.tryParse(json['cafe_id'].toString()) : null,
     );
   }
 
@@ -34,8 +37,11 @@ class User {
       'phone': phone,
       'address': address,
       'role': role,
+      'cafe_id': cafeId,
     };
   }
 
-  bool get isContentManager => role == 'manager' || role == 'admin';
+  bool get isAdmin => role == 'admin';
+  bool get isManager => role == 'manager';
+  bool get isContentManager => role == 'content_manager' || role == 'admin';
 }

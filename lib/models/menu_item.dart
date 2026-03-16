@@ -38,9 +38,9 @@ class MenuItem {
       'name': name,
       'description': description,
       'price': price,
-      'imageUrl': imageUrl,
+      'image_url': imageUrl,
       'category': category,
-      'cafeId': cafeId,
+      'cafe_id': cafeId,
       'available': available,
     };
   }

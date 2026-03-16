@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/cart_provider.dart';
 import 'reservation_page.dart';  // Access to ReservationPage if needed
 import '../models/cafe.dart'; // To access cafe data if needed
@@ -14,6 +14,8 @@ import 'register_page.dart';
 import 'search_page.dart';
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
+import '../providers/home_provider.dart';
+import 'notifications_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,29 +28,12 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentCarouselIndex = 0;
 
-  List<Map<String, dynamic>> _carouselItems = [];
-  bool _isLoadingSliders = true;
-
   @override
   void initState() {
     super.initState();
-    _loadSliders();
-  }
-
-  Future<void> _loadSliders() async {
-    try {
-      final sliders = await ApiService.getSliders();
-      if (mounted) {
-        setState(() {
-          _carouselItems = sliders;
-          _isLoadingSliders = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingSliders = false);
-      }
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HomeProvider>().loadHomeData();
+    });
   }
 
   final List<Map<String, dynamic>> _categories = [
@@ -64,10 +49,10 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey,
       drawer: const AppDrawer(),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(142 + MediaQuery.of(context).padding.top),
+        preferredSize: Size.fromHeight(135 + MediaQuery.of(context).padding.top),
         child: Container(
           color: Theme.of(context).primaryColor,
-          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10, left: 16, right: 16, bottom: 10),
+          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10, left: 16, right: 16, bottom: 5),
           child: Column(
             children: [
               Row(
@@ -98,6 +83,12 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       // Theme Toggle
                       IconButton(
+                        icon: const Icon(Icons.notifications_none, color: Colors.white),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage()));
+                        },
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.brightness_6, color: Colors.white),
                         onPressed: () => context.read<ThemeProvider>().toggleTheme(),
                       ),
@@ -125,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Container(
                 height: 45,
                 decoration: BoxDecoration(
@@ -164,79 +155,100 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Carousel / Banner (moved up for better flow)
-            if (_isLoadingSliders)
-              const SizedBox(height: 220, child: Center(child: CircularProgressIndicator()))
-            else if (_carouselItems.isNotEmpty)
-              SizedBox(
-                height: 220,
-                width: double.infinity,
-                child: Stack(
-                  children: [
-                    PageView.builder(
-                    itemCount: _carouselItems.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentCarouselIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final item = _carouselItems[index];
-                      return Container(
-                        width: double.infinity,
-                        color: Colors.black,
-                        child: Stack(
-                          children: [
-                            // Background media
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: 1.0,
-                                child: item['type'] == 'video'
-                                  ? _VideoBackground(url: item['url']!)
-                                  : (item['url']!.startsWith('assets/') 
-                                      ? Image.asset(item['url']!, fit: BoxFit.cover)
-                                      : Image.network(item['url']!, fit: BoxFit.cover)), 
-                              ),
+            Consumer<HomeProvider>(
+              builder: (context, homeProvider, child) {
+                if (homeProvider.isLoadingSliders) {
+                  return const SizedBox(height: 220, child: Center(child: CircularProgressIndicator()));
+                }
+                
+                final sliders = homeProvider.sliders;
+                if (sliders.isEmpty) {
+                  if (homeProvider.sliderError != null) {
+                    return SizedBox(height: 220, child: Center(child: Text('Erreur: ${homeProvider.sliderError}')));
+                  }
+                  return const SizedBox.shrink();
+                }
+
+                return SizedBox(
+                  height: 220,
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        itemCount: sliders.length,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentCarouselIndex = index;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final item = sliders[index];
+                          return Container(
+                            width: double.infinity,
+                            color: Colors.black,
+                            child: Stack(
+                              children: [
+                                // Background media
+                                Positioned.fill(
+                                  child: Opacity(
+                                    opacity: 1.0,
+                                    child: item['type'] == 'video'
+                                      ? _VideoBackground(url: item['url']!)
+                                      : (item['url']!.startsWith('assets/') 
+                                          ? Image.asset(item['url']!, fit: BoxFit.cover)
+                                          : CachedNetworkImage(
+                                              imageUrl: ApiService.getFullImageUrl(item['url']), 
+                                              fit: BoxFit.cover,
+                                              httpHeaders: const {
+                                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                              },
+                                              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                              errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                                            )), 
+                                  ),
+                                ),
+                                // Edit button for Content Manager
+                                Consumer<AuthProvider>(
+                                  builder: (context, auth, child) {
+                                    if (auth.user?.isContentManager ?? false) {
+                                      return Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.white),
+                                          onPressed: () => _editSliderItem(item),
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ],
                             ),
-                            // Edit button for Content Manager
-                            Consumer<AuthProvider>(
-                              builder: (context, auth, child) {
-                                if (auth.user?.isContentManager ?? false) {
-                                  return Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.white),
-                                      onPressed: () => _editSliderItem(index),
-                                    ),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
+                          );
+                        },
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(sliders.length, (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentCarouselIndex == index ? Theme.of(context).primaryColor : Colors.grey[600],
                             ),
-                          ],
+                          )),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 10,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_carouselItems.length, (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentCarouselIndex == index ? Theme.of(context).primaryColor : Colors.grey[600],
-                        ),
-                      )),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
 
             // "Marques" style section (using cafe locations)
@@ -246,22 +258,27 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(
               height: 120,
-              child: FutureBuilder<List<Cafe>>(
-                future: ApiService.getCafes(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+              child: Consumer<HomeProvider>(
+                builder: (context, homeProvider, child) {
+                  if (homeProvider.isLoadingCafes && homeProvider.cafes.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  final cafes = snapshot.data ?? [];
+                  
+                  final cafes = homeProvider.cafes;
                   if (cafes.isEmpty) {
+                    if (homeProvider.cafeError != null) {
+                      return Center(child: Text('Erreur: ${homeProvider.cafeError}'));
+                    }
                     return const Center(child: Text('Aucun café disponible'));
                   }
+                  
                   if (cafes.length <= 3) {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: cafes.map((cafe) => _buildLocationItem(cafe)).toList(),
                     );
                   }
+                  
                   return ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -450,7 +467,14 @@ class _HomePageState extends State<HomePage> {
             child: CircleAvatar(
               radius: 30,
               backgroundColor: Colors.grey[200],
-              backgroundImage: cafe.imageUrl.isNotEmpty ? NetworkImage(cafe.imageUrl) : null,
+              backgroundImage: cafe.imageUrl.isNotEmpty 
+                  ? CachedNetworkImageProvider(
+                      ApiService.getFullImageUrl(cafe.imageUrl),
+                      headers: const {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                      },
+                    ) 
+                  : null,
               child: cafe.imageUrl.isEmpty 
                   ? Icon(Icons.location_on, color: Theme.of(context).primaryColor.withOpacity(0.7))
                   : null,
@@ -463,9 +487,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _editSliderItem(int index) {
+  void _editSliderItem(Map<String, dynamic> item) {
     // Show dialog to edit slider item
-    final item = _carouselItems[index];
+    // final item = _carouselItems[index];
     final titleController = TextEditingController(text: item['title']);
     final subtitleController = TextEditingController(text: item['subtitle']);
     
@@ -532,7 +556,7 @@ class _HomePageState extends State<HomePage> {
                   
                   if (success && mounted) {
                     Navigator.pop(context);
-                    _loadSliders(); // Reload all sliders to get the new URLs
+                    context.read<HomeProvider>().loadSliders(); // Reload all sliders to get the new URLs
                   } else {
                     setDialogState(() => isSaving = false);
                     if (mounted) {

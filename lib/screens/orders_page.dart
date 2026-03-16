@@ -2,18 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/order_provider.dart';
+import '../providers/cart_provider.dart';
 import '../models/order.dart';
+import 'app_drawer.dart';
+import 'main_navigation.dart';
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     final orderProvider = Provider.of<OrderProvider>(context);
     final orders = orderProvider.orders;
 
     return Scaffold(
+      key: scaffoldKey,
+      drawer: const AppDrawer(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => scaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Mes Commandes'),
       ),
       body: orders.isEmpty
@@ -107,7 +117,47 @@ class OrdersPage extends StatelessWidget {
                   ),
                 );
               },
-            ),
+      ),
+      bottomNavigationBar: Consumer<CartProvider>(
+        builder: (context, cart, child) {
+          return BottomNavigationBar(
+            currentIndex: 0,
+            onTap: (index) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const MainNavigation()),
+                (route) => false,
+              );
+            },
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Theme.of(context).primaryColor,
+            unselectedItemColor: Colors.grey,
+            items: [
+              const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
+              const BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Cafés'),
+              const BottomNavigationBarItem(icon: Icon(Icons.cake_outlined), label: 'Anniversaire'),
+              const BottomNavigationBarItem(icon: Icon(Icons.event_outlined), label: 'Événements'),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined),
+                    if (cart.itemCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: CircleAvatar(
+                          radius: 8,
+                          backgroundColor: Colors.red,
+                          child: Text('${cart.itemCount}', style: const TextStyle(fontSize: 10, color: Colors.white)),
+                        ),
+                      )
+                  ],
+                ),
+                label: 'Panier',
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

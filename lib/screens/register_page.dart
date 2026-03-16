@@ -19,6 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _handleRegister() async {
     if (_nameController.text.isEmpty || 
         _emailController.text.isEmpty || 
+        _phoneController.text.isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir les champs obligatoires')),
@@ -30,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _nameController.text,
       _emailController.text,
       _passwordController.text,
-      phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+      phone: _phoneController.text,
       address: _addressController.text.isNotEmpty ? _addressController.text : null,
     );
 
@@ -76,7 +77,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                labelText: 'Téléphone',
+                labelText: 'Téléphone *',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.phone),
               ),

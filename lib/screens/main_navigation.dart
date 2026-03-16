@@ -7,6 +7,10 @@ import 'cart_page.dart';
 import 'anniversary_page.dart';
 import 'events_page.dart';
 
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'no_internet_page.dart';
+
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -16,6 +20,34 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
+  bool _isOffline = false;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      _updateConnectionStatus(results);
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final List<ConnectivityResult> results = await Connectivity().checkConnectivity();
+    _updateConnectionStatus(results);
+  }
+
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
+    setState(() {
+      _isOffline = results.isEmpty || results.every((result) => result == ConnectivityResult.none);
+    });
+  }
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -27,8 +59,15 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isOffline) {
+      return NoInternetPage(onRetry: _checkConnectivity);
+    }
+
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Consumer<CartProvider>(
         builder: (context, cart, child) {
           return BottomNavigationBar(

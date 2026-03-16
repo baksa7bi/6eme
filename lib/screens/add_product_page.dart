@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../models/cafe.dart';
 import '../models/menu_item.dart';
+import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -38,6 +40,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
   Future<void> _loadData() async {
     try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
       final results = await Future.wait([
         ApiService.getCafes(),
         ApiService.getCategories(),
@@ -47,9 +50,12 @@ class _AddProductPageState extends State<AddProductPage> {
         _cafes = results[0] as List<Cafe>;
         _categories = results[1] as List<String>;
 
-        if (_cafes.isNotEmpty) {
+        if (auth.user?.isManager == true && auth.user?.cafeId != null) {
+          _selectedCafeId = auth.user!.cafeId.toString();
+        } else if (_cafes.isNotEmpty) {
           _selectedCafeId = _cafes.first.id.toString();
         }
+        
         if (_categories.isNotEmpty) {
           _selectedCategory = _categories.first;
         }
@@ -69,7 +75,8 @@ class _AddProductPageState extends State<AddProductPage> {
     if (!_formKey.currentState!.validate() || _selectedCafeId == null || _selectedCategory == null) return;
 
     setState(() => _isSubmitting = true);
-
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    
     final newItem = MenuItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text,
@@ -80,7 +87,7 @@ class _AddProductPageState extends State<AddProductPage> {
       imageUrl: '', // Backend handles the final URL
     );
 
-    final success = await ApiService.addMenuItem(newItem, imageFile: _imageFile);
+    final success = await ApiService.addMenuItem(newItem, imageFile: _imageFile, userId: auth.user!.id);
 
     setState(() => _isSubmitting = false);
 
@@ -140,21 +147,37 @@ class _AddProductPageState extends State<AddProductPage> {
                       validator: (value) => value == null ? 'Veuillez sélectionner une catégorie' : null,
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Café'),
-                      value: _selectedCafeId,
-                      items: _cafes.map((cafe) {
-                        return DropdownMenuItem<String>(
-                          value: cafe.id.toString(),
-                          child: Text(cafe.name),
+                    // Only show cafe selector if user is admin or content manager
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        bool isManagerOnly = auth.user?.isManager == true && !auth.user!.isAdmin;
+                        return DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Café',
+                            helperText: isManagerOnly ? 'Assigné à votre café' : null,
+                          ),
+                          value: _selectedCafeId,
+                          items: [
+                            if (auth.user?.isAdmin == true)
+                              const DropdownMenuItem<String>(
+                                value: 'all',
+                                child: Text('Tous les cafés (Admin)', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                              ),
+                            ..._cafes.map((cafe) {
+                              return DropdownMenuItem<String>(
+                                value: cafe.id.toString(),
+                                child: Text(cafe.name),
+                              );
+                            }),
+                          ],
+                          onChanged: isManagerOnly ? null : (value) {
+                            setState(() {
+                              _selectedCafeId = value;
+                            });
+                          },
+                          validator: (value) => value == null ? 'Veuillez sélectionner un café' : null,
                         );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCafeId = value;
-                        });
                       },
-                      validator: (value) => value == null ? 'Veuillez sélectionner un café' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/favorite_provider.dart';
 import 'login_page.dart';
 import 'anniversary_page.dart';
 import 'orders_page.dart';
@@ -14,7 +15,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'add_product_page.dart';
 import 'add_event_page.dart';
 import 'favorites_page.dart';
+import 'add_manager_page.dart';
 import 'settings_page.dart';
+import 'coupons_page.dart';
+import 'manager_coupons_page.dart';
+import 'agencies_page.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -88,10 +93,11 @@ class AppDrawer extends StatelessWidget {
                   Navigator.pop(context); // Close drawer, already on home or main nav
                   // Ideally navigate to tab 0 if using a global key for MainNavigation, but for now just closing is fine
                 }),
-                _buildMenuItem(context, Icons.favorite_border, 'Mes favoris', () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
-                }),
+                if (auth.isAuthenticated)
+                  _buildMenuItem(context, Icons.favorite_border, 'Mes favoris', () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+                  }),
                 _buildMenuItem(context, Icons.inventory_2_outlined, 'Mes Commandes', () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
@@ -100,6 +106,11 @@ class AppDrawer extends StatelessWidget {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
                 }),
+                if (!(auth.user?.isManager ?? false) && !(auth.user?.isAdmin ?? false))
+                  _buildMenuItem(context, Icons.confirmation_num_outlined, 'Mes Coupons', () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CouponsPage()));
+                  }),
                 
                 const Divider(),
                 
@@ -113,7 +124,7 @@ class AppDrawer extends StatelessWidget {
                 _buildMenuItem(context, Icons.help_outline, 'Aide & Support', () {}),
 
                 if (auth.isAuthenticated) ...[
-                  if (auth.user?.isContentManager ?? false) ...[
+                  if ((auth.user?.isContentManager ?? false) || (auth.user?.isManager ?? false)) ...[
                     const Divider(),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -127,10 +138,26 @@ class AppDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
                     }),
+                    if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
+                      _buildMenuItem(context, Icons.confirmation_number, 'Coupons Actifs', () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagerCouponsPage()));
+                      }),
+                    if (auth.user?.isAdmin ?? false) ...[
+                      _buildMenuItem(context, Icons.business, 'Gestion Agences', () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AgenciesPage()));
+                      }),
+                      _buildMenuItem(context, Icons.person_add, 'Ajouter un Manager', () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddManagerPage()));
+                      }),
+                    ],
                   ],
                   const Divider(),
                   _buildMenuItem(context, Icons.logout, 'Se déconnecter', () {
                     auth.logout();
+                    context.read<FavoriteProvider>().clearFavorites();
                     Navigator.pop(context);
                   }, color: Colors.red),
                 ],

@@ -1,16 +1,36 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../models/cafe.dart';
 import '../models/menu_item.dart';
 import '../models/event.dart';
+import '../models/coupon.dart';
+import '../models/agency.dart';
 
 class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
   static const String baseUrl = 'https://api.sfw-digital.com/api'; 
+  // static const String baseUrl = 'http://192.168.100.40:8000/api'; 
+  static String get storageUrl {
+    if (baseUrl.endsWith('/api')) {
+      return baseUrl.substring(0, baseUrl.length - 4) + '/storage';
+    }
+    return '$baseUrl/storage';
+  }
+  
+  static String getFullImageUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('assets/')) return path;
+    String cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    final fullUrl = '$storageUrl/$cleanPath';
+    debugPrint('API_LOG: Generated Image URL: $fullUrl');
+    return fullUrl;
+  }
   
   static String? _token;
 
@@ -47,6 +67,66 @@ class ApiService {
       }),
     );
     return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(String name, String email, String phone, {String? address, String? password}) async {
+    final body = <String, dynamic>{
+      'name': name,
+      'email': email,
+      'phone': phone,
+    };
+    if (address != null && address.isNotEmpty) body['address'] = address;
+    if (password != null && password.isNotEmpty) body['password'] = password;
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/profile'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+    return jsonDecode(response.body);
+  }
+
+  static Future<bool> addManager(String name, String email, String password, String phone, String cafeId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/admin/managers'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'cafe_id': cafeId,
+      }),
+    );
+    return response.statusCode == 201;
+  }
+
+  static Future<List<Map<String, dynamic>>> getNotifications() async {
+    final response = await http.get(Uri.parse('$baseUrl/user/notifications'), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
+  // Favorites
+  static Future<List<MenuItem>> getFavorites() async {
+    final response = await http.get(Uri.parse('$baseUrl/favorites'), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => MenuItem.fromJson(json)).toList();
+    }
+    return [];
+  }
+
+  static Future<bool> toggleFavorite(String menuItemId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/favorites/toggle'),
+      headers: _headers,
+      body: jsonEncode({'menu_item_id': menuItemId}),
+    );
+    return response.statusCode == 200;
   }
 
   // Cafes
@@ -193,28 +273,6 @@ class ApiService {
     return response.statusCode == 200;
   }
 
-  static Future<bool> addMenuItem(MenuItem item, {File? imageFile}) async {
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/menu-items'));
-    request.headers.addAll({
-      'Authorization': 'Bearer $_token',
-      'Accept': 'application/json',
-    });
-
-    request.fields['name'] = item.name;
-    request.fields['price'] = item.price.toString();
-    request.fields['category'] = item.category;
-    request.fields['cafe_id'] = item.cafeId;
-    if (item.description != null) request.fields['description'] = item.description!;
-
-    if (imageFile != null) {
-      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-    } else if (item.imageUrl.isNotEmpty) {
-      request.fields['image_url'] = item.imageUrl;
-    }
-
-    final response = await request.send();
-    return response.statusCode == 201;
-  }
 
   static Future<List<String>> getCategories() async {
     try {
@@ -230,7 +288,69 @@ class ApiService {
     return ['Café', 'Thé', 'Boissons', 'Pâtisserie', 'Entrées', 'Sushi', 'Plats Chauds', 'Assortiments', 'Desserts'];
   }
 
-  static Future<bool> addEvent(Event event, {File? imageFile}) async {
+
+  // Coupons
+  static Future<List<Coupon>> getCoupons(int userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/coupons?user_id=$userId'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Coupon.fromJson(json)).toList();
+    }
+    throw Exception('Failed to load coupons');
+  }
+
+  static Future<Map<String, dynamic>> validateCoupon(String code, int userId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupons/validate'),
+      headers: _headers,
+      body: jsonEncode({
+        'code': code,
+        'user_id': userId,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
+
+  static Future<List<Coupon>> getActiveCoupons() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/coupons/active'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Coupon.fromJson(json)).toList();
+    }
+    throw Exception('Failed to load active coupons');
+  }
+
+  static Future<bool> addMenuItem(MenuItem item, {File? imageFile, required String userId}) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/menu-items'));
+    request.headers.addAll({
+      'Authorization': 'Bearer $_token',
+      'Accept': 'application/json',
+    });
+
+    request.fields['name'] = item.name;
+    request.fields['price'] = item.price.toString();
+    request.fields['category'] = item.category;
+    request.fields['cafe_id'] = item.cafeId;
+    request.fields['user_id'] = userId;
+    if (item.description != null) request.fields['description'] = item.description!;
+
+    if (imageFile != null) {
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+    } else if (item.imageUrl.isNotEmpty) {
+      request.fields['image_url'] = item.imageUrl;
+    }
+
+    final response = await request.send();
+    return response.statusCode == 201;
+  }
+
+  static Future<bool> addEvent(Event event, {File? imageFile, required String userId, String? cafeId}) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/events'));
     request.headers.addAll({
       'Authorization': 'Bearer $_token',
@@ -241,8 +361,13 @@ class ApiService {
     request.fields['description'] = event.description;
     request.fields['date'] = event.date.toIso8601String();
     request.fields['location'] = event.location;
+    request.fields['user_id'] = userId;
     
-    if (event.cafe?.id != null) request.fields['cafe_id'] = event.cafe!.id.toString();
+    if (cafeId != null) {
+      request.fields['cafe_id'] = cafeId;
+    } else if (event.cafe?.id != null) {
+      request.fields['cafe_id'] = event.cafe!.id.toString();
+    }
     if (event.videoUrl != null && event.videoUrl!.isNotEmpty) {
       request.fields['video_url'] = event.videoUrl!;
     }
@@ -255,5 +380,79 @@ class ApiService {
 
     final response = await request.send();
     return response.statusCode == 201;
+  }
+
+  static Future<bool> requestCoupon(int userId, File imageFile, double amount) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/coupon-requests'));
+    request.headers.addAll({
+      'Authorization': 'Bearer $_token',
+      'Accept': 'application/json',
+    });
+
+    request.fields['user_id'] = userId.toString();
+    request.fields['amount'] = amount.toString();
+    request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+    final response = await request.send();
+    return response.statusCode == 201;
+  }
+
+  static Future<List<Map<String, dynamic>>> getCouponRequests({int? userId}) async {
+    String url = '$baseUrl/coupon-requests';
+    if (userId != null) url += '?user_id=$userId';
+    
+    final response = await http.get(
+      Uri.parse(url),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    }
+    throw Exception('Failed to load coupon requests');
+  }
+
+  static Future<bool> approveCouponRequest(int requestId, {double discountAmount = 50.0}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupon-requests/$requestId/approve'),
+      headers: _headers,
+      body: jsonEncode({'discount_amount': discountAmount}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> rejectCouponRequest(int requestId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupon-requests/$requestId/reject'),
+      headers: _headers,
+    );
+    return response.statusCode == 200;
+  }
+
+  // Agencies
+  static Future<List<Agency>> getAgencies() async {
+    final response = await http.get(Uri.parse('$baseUrl/agencies'), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Agency.fromJson(json)).toList();
+    }
+    throw Exception('Failed to load agencies');
+  }
+
+  static Future<bool> addAgency(Map<String, dynamic> agencyData) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agencies'),
+      headers: _headers,
+      body: jsonEncode(agencyData),
+    );
+    return response.statusCode == 201;
+  }
+
+  static Future<bool> deleteAgency(String id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/agencies/$id'),
+      headers: _headers,
+    );
+    return response.statusCode == 204;
   }
 }

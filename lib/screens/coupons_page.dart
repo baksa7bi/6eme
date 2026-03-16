@@ -1,0 +1,435 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/cart_provider.dart';
+import '../services/api_service.dart';
+import '../models/coupon.dart';
+import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'app_drawer.dart';
+import 'main_navigation.dart';
+
+class CouponsPage extends StatefulWidget {
+  const CouponsPage({super.key});
+
+  @override
+  State<CouponsPage> createState() => _CouponsPageState();
+}
+
+class _CouponsPageState extends State<CouponsPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Future<List<Coupon>> _couponsFuture = Future.value([]);
+  Future<List<Map<String, dynamic>>> _requestsFuture = Future.value([]);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCoupons();
+  }
+
+  bool _isUploading = false;
+
+  void _loadCoupons() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isAuthenticated) {
+      setState(() {
+        _couponsFuture = ApiService.getCoupons(int.parse(authProvider.user!.id));
+        _requestsFuture = ApiService.getCouponRequests(userId: int.parse(authProvider.user!.id));
+      });
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // Show dialog to enter amount
+      final amountController = TextEditingController();
+      final double? amount = await showDialog<double>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Montant du reçu'),
+          content: TextField(
+            controller: amountController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              hintText: 'Entrez le montant total du reçu',
+              suffixText: 'DH',
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: () {
+                final val = double.tryParse(amountController.text);
+                if (val != null && val > 0) {
+                  Navigator.pop(context, val);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Veuillez entrer un montant valide')),
+                  );
+                }
+              },
+              child: const Text('Continuer'),
+            ),
+          ],
+        ),
+      );
+
+      if (amount == null) return;
+
+      setState(() => _isUploading = true);
+      
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await ApiService.requestCoupon(
+        int.parse(authProvider.user!.id),
+        File(pickedFile.path),
+        amount,
+      );
+
+      setState(() => _isUploading = false);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Demande envoyée avec succès !')),
+        );
+        _loadCoupons();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Échec de l\'envoi de la demande.')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
+        title: const Text('Mes Coupons', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          _buildRequestsSection(),
+          Expanded(
+            child: FutureBuilder<List<Coupon>>(
+              future: _couponsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Erreur: ${snapshot.error}'));
+                }
+
+                final coupons = snapshot.data ?? [];
+
+                if (coupons.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: coupons.length,
+                  itemBuilder: (context, index) {
+                    final coupon = coupons[index];
+                    return _buildCouponCard(coupon);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _isUploading ? null : _pickAndUploadImage,
+        label: _isUploading 
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+          : const Text('Acquérir un Coupon'),
+        icon: _isUploading ? null : const Icon(Icons.add_a_photo),
+        backgroundColor: Colors.deepOrange,
+      ),
+      bottomNavigationBar: Consumer<CartProvider>(
+        builder: (context, cart, child) {
+          return BottomNavigationBar(
+            currentIndex: 0, // Not a primary tab, but show Home as default
+            onTap: (index) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const MainNavigation()),
+                (route) => false,
+              );
+              // Wait for navigation and then handle index if needed, 
+              // but pushing MainNavigation defaults to 0. 
+            },
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Theme.of(context).primaryColor,
+            unselectedItemColor: Colors.grey,
+            items: [
+              const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
+              const BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Cafés'),
+              const BottomNavigationBarItem(icon: Icon(Icons.cake_outlined), label: 'Anniversaire'),
+              const BottomNavigationBarItem(icon: Icon(Icons.event_outlined), label: 'Événements'),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined),
+                    if (cart.itemCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: CircleAvatar(
+                          radius: 8,
+                          backgroundColor: Colors.red,
+                          child: Text('${cart.itemCount}', style: const TextStyle(fontSize: 10, color: Colors.white)),
+                        ),
+                      )
+                  ],
+                ),
+                label: 'Panier',
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.confirmation_num_outlined, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'Aucun coupon disponible',
+            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Soumettez 5 photos de vos tickets de caisse pour obtenir un coupon gratuit égal au montant le moins cher !',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequestsSection() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _requestsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox.shrink();
+        
+        final requests = snapshot.data!;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Demandes en cours', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: requests.length,
+                  itemBuilder: (context, index) {
+                    final req = requests[index];
+                    return Container(
+                      width: 150,
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            req['status'] == 'pending' ? Icons.hourglass_empty : 
+                            req['status'] == 'approved' ? Icons.check_circle : Icons.error,
+                            color: req['status'] == 'pending' ? Colors.orange : 
+                                   req['status'] == 'approved' ? Colors.green : Colors.red,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            req['status'] == 'pending' ? 'En attente' : 
+                            req['status'] == 'approved' ? 'Approuvée' : 'Rejetée',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${req['amount']} DH',
+                            style: const TextStyle(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.w500),
+                          ),
+                          Text(
+                            DateFormat('dd/MM HH:mm').format(DateTime.parse(req['created_at'])),
+                            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCouponCard(Coupon coupon) {
+    final bool isExpired = coupon.expiryDate != null && coupon.expiryDate!.isBefore(DateTime.now());
+    final bool isAvailable = !coupon.isUsed && !isExpired;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: isAvailable
+            ? LinearGradient(
+                colors: [Colors.orange.shade400, Colors.deepOrange.shade600],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : LinearGradient(
+                colors: [Colors.grey.shade400, Colors.grey.shade600],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        boxShadow: [
+          BoxShadow(
+            color: (isAvailable ? Colors.orange : Colors.grey).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // Decorative circles
+            Positioned(
+              right: -20,
+              top: -20,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.white.withOpacity(0.1),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CADEAU 🎁',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${coupon.discountAmount.toStringAsFixed(2)} MAD',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Offre sur votre prochain achat',
+                          style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            coupon.code,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(color: Colors.white, thickness: 1),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (coupon.isUsed)
+                        _buildStatusBadge('UTILISÉ', Colors.white24)
+                      else if (isExpired)
+                        _buildStatusBadge('EXPIRÉ', Colors.white24)
+                      else
+                        _buildStatusBadge('VALIDE', Colors.white),
+                      const SizedBox(height: 8),
+                      if (coupon.expiryDate != null)
+                        Text(
+                          'Expire le:\n${DateFormat('dd/MM/yyyy').format(coupon.expiryDate!)}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 10,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}

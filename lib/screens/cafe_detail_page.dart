@@ -3,7 +3,11 @@ import 'package:provider/provider.dart';
 import '../models/cafe.dart';
 import '../models/menu_item.dart';
 import '../providers/cart_provider.dart';
+import '../providers/favorite_provider.dart';
 import '../services/api_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../providers/auth_provider.dart';
+import 'login_page.dart';
 import 'reservation_page.dart';
 
 class CafeDetailPage extends StatefulWidget {
@@ -77,10 +81,14 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                 ),
               ),
               background: widget.cafe.imageUrl.isNotEmpty
-                  ? Image.network(
-                      widget.cafe.imageUrl,
+                  ? CachedNetworkImage(
+                      imageUrl: ApiService.getFullImageUrl(widget.cafe.imageUrl),
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                      httpHeaders: const {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                      },
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Image.asset(
                         'assets/images/cafe.jpg',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
@@ -207,12 +215,16 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: item.imageUrl.isNotEmpty
-              ? Image.network(
-                  item.imageUrl,
+              ? CachedNetworkImage(
+                  imageUrl: ApiService.getFullImageUrl(item.imageUrl),
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  httpHeaders: const {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                  },
+                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Container(
                     width: 60,
                     height: 60,
                     color: Colors.grey[200],
@@ -241,18 +253,49 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ],
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.add_shopping_cart),
-          onPressed: () {
-            context.read<CartProvider>().addItem(item);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${item.name} ajouté au panier'),
-                duration: const Duration(seconds: 1),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Consumer<FavoriteProvider>(
+              builder: (context, favoriteProvider, _) {
+                final isFavorite = favoriteProvider.isFavorite(item.id);
+                return IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : null,
+                  ),
+                  onPressed: () {
+                    final auth = context.read<AuthProvider>();
+                    if (auth.isAuthenticated) {
+                      favoriteProvider.toggleFavorite(item);
+                    } else {
+                      auth.setPendingFavorite(item);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Veuillez vous connecter pour ajouter des favoris')),
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_shopping_cart),
+              onPressed: () {
+                context.read<CartProvider>().addItem(item);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${item.name} ajouté au panier'),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         isThreeLine: true,
       ),

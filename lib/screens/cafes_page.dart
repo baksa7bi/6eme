@@ -5,6 +5,7 @@ import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../models/order.dart';
 import '../services/api_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'orders_page.dart';
 import 'cafe_detail_page.dart';
 
@@ -79,24 +80,22 @@ class CafesPage extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: cafe.imageUrl.isNotEmpty
-                    ? Image.network(
-                        cafe.imageUrl,
+                    ? CachedNetworkImage(
+                        imageUrl: ApiService.getFullImageUrl(cafe.imageUrl),
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
+                        httpHeaders: const {
+                          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        },
+                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) {
                           // Fallback to asset if network fails
                           return Image.asset(
                             'assets/images/cafe.jpg',
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Theme.of(context).primaryColor.withOpacity(0.7),
-                              child: const Center(
-                                child: Icon(Icons.local_cafe, size: 60, color: Colors.white70),
-                              ),
-                            ),
                           );
                         },
                       )

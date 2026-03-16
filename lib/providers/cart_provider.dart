@@ -6,12 +6,14 @@ class CartProvider with ChangeNotifier {
   final List<CartItem> _items = [];
   String _deliveryAddress = '';
   String _deliveryInstructions = '';
+  String? _selectedAgencyId;
 
   List<CartItem> get items => _items;
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
   double get totalAmount => _items.fold(0, (sum, item) => sum + item.totalPrice);
   String get deliveryAddress => _deliveryAddress;
   String get deliveryInstructions => _deliveryInstructions;
+  String? get selectedAgencyId => _selectedAgencyId;
 
   void addItem(MenuItem menuItem) {
     final existingIndex = _items.indexWhere((item) => item.menuItem.id == menuItem.id);
@@ -59,10 +61,16 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setAgencyId(String? id) {
+    _selectedAgencyId = id;
+    notifyListeners();
+  }
+
   void clear() {
     _items.clear();
     _deliveryAddress = '';
     _deliveryInstructions = '';
+    _selectedAgencyId = null;
     notifyListeners();
   }
 }

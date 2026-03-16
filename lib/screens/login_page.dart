@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/favorite_provider.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -59,7 +60,25 @@ class _LoginPageState extends State<LoginPage> {
                               _passwordController.text,
                             );
                             if (success && mounted) {
+                              // Refresh favorites for the logged in user
+                              context.read<FavoriteProvider>().loadFavoritesFromApi();
+                              
+                              // Handle pending favorite
+                              if (auth.pendingFavorite != null) {
+                                context.read<FavoriteProvider>().toggleFavorite(auth.pendingFavorite!);
+                                auth.setPendingFavorite(null); // Clear it
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Article ajouté aux favoris !')),
+                                );
+                              }
                               Navigator.pop(context); 
+                            } else if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('L\'email ou le mot de passe est incorrect.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
                             }
                           },
                     child: auth.isLoading

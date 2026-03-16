@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/cafe.dart';
 import '../models/event.dart';
+import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
-import 'package:intl/intl.dart';
 
 class AddEventPage extends StatefulWidget {
   const AddEventPage({super.key});
@@ -28,6 +30,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
   List<Cafe> _cafes = [];
   Cafe? _selectedCafe;
+  String? _selectedCafeId;
   bool _isLoading = true;
   bool _isSubmitting = false;
 
@@ -39,11 +42,22 @@ class _AddEventPageState extends State<AddEventPage> {
 
   Future<void> _loadCafes() async {
     try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
       final cafes = await ApiService.getCafes();
       setState(() {
         _cafes = cafes;
-        if (_cafes.isNotEmpty) {
+        if (auth.user?.isManager == true && auth.user?.cafeId != null) {
+          _selectedCafe = _cafes.firstWhere(
+            (c) => c.id == auth.user!.cafeId.toString(),
+            orElse: () => _cafes.first,
+          );
+          _selectedCafeId = _selectedCafe?.id;
+        } else if (_cafes.isNotEmpty) {
           _selectedCafe = _cafes.first;
+          _selectedCafeId = _selectedCafe?.id;
+        }
+
+        if (_selectedCafe != null) {
           _locationController.text = _selectedCafe!.address;
         }
         _isLoading = false;
@@ -59,9 +73,10 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate() || _selectedCafe == null) return;
+    if (!_formKey.currentState!.validate() || _selectedCafeId == null) return;
 
     setState(() => _isSubmitting = true);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
 
     final eventDateTime = DateTime(
       _selectedDate.year,
@@ -82,7 +97,7 @@ class _AddEventPageState extends State<AddEventPage> {
       cafe: _selectedCafe,
     );
 
-    final success = await ApiService.addEvent(newEvent, imageFile: _imageFile);
+    final success = await ApiService.addEvent(newEvent, imageFile: _imageFile, userId: auth.user!.id, cafeId: _selectedCafeId);
 
     setState(() => _isSubmitting = false);
 
@@ -125,24 +140,45 @@ class _AddEventPageState extends State<AddEventPage> {
                       validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<Cafe>(
-                      decoration: const InputDecoration(labelText: 'Café / Lieu'),
-                      value: _selectedCafe,
-                      items: _cafes.map((cafe) {
-                        return DropdownMenuItem<Cafe>(
-                          value: cafe,
-                          child: Text(cafe.name),
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        bool isManagerOnly = auth.user?.isManager == true && !auth.user!.isAdmin;
+                        return DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Café / Lieu',
+                            helperText: isManagerOnly ? 'Assigné à votre café' : null,
+                          ),
+                          value: _selectedCafeId,
+                          items: [
+                            if (auth.user?.isAdmin == true)
+                              const DropdownMenuItem<String>(
+                                value: 'all',
+                                child: Text('Tous les cafés (Admin)', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                              ),
+                            ..._cafes.map((cafe) {
+                              return DropdownMenuItem<String>(
+                                value: cafe.id,
+                                child: Text(cafe.name),
+                              );
+                            }),
+                          ],
+                          onChanged: isManagerOnly ? null : (value) {
+                            setState(() {
+                              _selectedCafeId = value;
+                              if (value == 'all') {
+                                _selectedCafe = null;
+                                _locationController.text = 'Tous les cafés';
+                              } else {
+                                _selectedCafe = _cafes.firstWhere((c) => c.id == value);
+                                if (_selectedCafe != null) {
+                                  _locationController.text = _selectedCafe!.address;
+                                }
+                              }
+                            });
+                          },
+                          validator: (value) => value == null ? 'Sélectionnez un café' : null,
                         );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCafe = value;
-                          if (value != null) {
-                            _locationController.text = value.address;
-                          }
-                        });
-                      },
-                      validator: (value) => value == null ? 'Sélectionnez un café' : null,
+                      }
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

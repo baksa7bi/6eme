@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CategoryPage extends StatelessWidget {
   final String categoryTitle;
@@ -73,10 +74,14 @@ class CategoryPage extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.network(
-                  item.imageUrl, 
+                child: CachedNetworkImage(
+                  imageUrl: ApiService.getFullImageUrl(item.imageUrl), 
                   fit: BoxFit.cover, 
-                  errorBuilder: (_,__,___) => const Icon(Icons.fastfood, size: 50, color: Colors.grey)
+                  httpHeaders: const {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                  },
+                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                  errorWidget: (_,__,___) => const Icon(Icons.fastfood, size: 50, color: Colors.grey)
                 ),
               ),
             ),
