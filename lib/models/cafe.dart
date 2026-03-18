@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Cafe {
   final String id;
   final String name;
@@ -22,16 +24,39 @@ class Cafe {
   });
 
   factory Cafe.fromJson(Map<String, dynamic> json) {
+    List<String> hours = [];
+    try {
+      var hoursData = json['opening_hours'];
+      if (hoursData != null) {
+        if (hoursData is List) {
+          hours = hoursData.map((e) => e.toString()).toList();
+        } else if (hoursData is String) {
+          if (hoursData.startsWith('[') && hoursData.endsWith(']')) {
+            var decoded = jsonDecode(hoursData);
+            if (decoded is List) {
+              hours = decoded.map((e) => e.toString()).toList();
+            } else {
+              hours = [hoursData];
+            }
+          } else {
+            hours = [hoursData];
+          }
+        }
+      }
+    } catch (e) {
+      print('Error parsing opening_hours: $e');
+    }
+
     return Cafe(
       id: json['id'].toString(),
-      name: json['name'],
-      address: json['address'],
-      phone: json['phone'],
-      imageUrl: json['image_url'] ?? '',
+      name: json['name']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString() ?? '',
       latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
       longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
-      description: json['description'] ?? '',
-      openingHours: List<String>.from(json['opening_hours'] ?? []),
+      description: json['description']?.toString() ?? '',
+      openingHours: hours,
     );
   }
 

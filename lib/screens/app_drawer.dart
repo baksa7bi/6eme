@@ -20,6 +20,10 @@ import 'settings_page.dart';
 import 'coupons_page.dart';
 import 'manager_coupons_page.dart';
 import 'agencies_page.dart';
+import 'agency_login_page.dart';
+import 'agency_dashboard_page.dart';
+import 'admin_agency_visits_page.dart';
+import '../providers/agency_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -27,6 +31,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final agencyProvider = Provider.of<AgencyProvider>(context);
     final theme = Theme.of(context);
 
     return Drawer(
@@ -42,7 +47,8 @@ class AppDrawer extends StatelessWidget {
               right: 20,
             ),
             color: theme.primaryColor,
-            child: auth.isAuthenticated 
+            child: auth.isAuthenticated
+              // ── Regular user logged in ──────────────────────────────────
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -62,15 +68,46 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ],
                 )
+              : agencyProvider.isAgencyAuthenticated
+              // ── Agency logged in ────────────────────────────────────────
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.business, size: 36, color: Colors.blue),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      agencyProvider.agency?.name ?? 'Agence',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      agencyProvider.agency?.email ?? '',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('Compte Agence', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    ),
+                  ],
+                )
+              // ── Nobody logged in ────────────────────────────────────────
               : Column(
                   children: [
-                     const Icon(Icons.account_circle, size: 60, color: Colors.white),
-                     const SizedBox(height: 10),
-                     const Text('Bienvenue !', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                     const SizedBox(height: 16),
-                     ElevatedButton(
+                    const Icon(Icons.account_circle, size: 60, color: Colors.white),
+                    const SizedBox(height: 10),
+                    const Text('Bienvenue !', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close drawer
+                        Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
                       },
                       style: ElevatedButton.styleFrom(
@@ -113,6 +150,22 @@ class AppDrawer extends StatelessWidget {
                   }),
                 
                 const Divider(),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text('AGENCE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                ),
+                if (agencyProvider.isAgencyAuthenticated)
+                  _buildMenuItem(context, Icons.dashboard, 'Dashboard Agence', () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AgencyDashboardPage()));
+                  })
+                else
+                  _buildMenuItem(context, Icons.business, 'Espace Agence', () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AgencyLoginPage()));
+                  }),
+                
+                const Divider(),
                 
                 _buildMenuItem(context, Icons.settings_outlined, 'Paramètres', () {
                   Navigator.pop(context);
@@ -143,6 +196,11 @@ class AppDrawer extends StatelessWidget {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagerCouponsPage()));
                       }),
+                    if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
+                      _buildMenuItem(context, Icons.receipt_long, 'Visites & Commissions', () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminAgencyVisitsPage()));
+                      }),
                     if (auth.user?.isAdmin ?? false) ...[
                       _buildMenuItem(context, Icons.business, 'Gestion Agences', () {
                         Navigator.pop(context);
@@ -158,6 +216,15 @@ class AppDrawer extends StatelessWidget {
                   _buildMenuItem(context, Icons.logout, 'Se déconnecter', () {
                     auth.logout();
                     context.read<FavoriteProvider>().clearFavorites();
+                    Navigator.pop(context);
+                  }, color: Colors.red),
+                ],
+
+                // ── Agency logout (shown only when agency is logged in) ───
+                if (agencyProvider.isAgencyAuthenticated) ...[
+                  const Divider(),
+                  _buildMenuItem(context, Icons.logout, 'Déconnecter l\'agence', () {
+                    agencyProvider.logout();
                     Navigator.pop(context);
                   }, color: Colors.red),
                 ],

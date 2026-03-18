@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import '../models/menu_item.dart';
+import 'agency_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
@@ -20,18 +21,24 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password,
+      {AgencyProvider? agencyProvider}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // If an agency is logged in, log them out first
+      if (agencyProvider != null && agencyProvider.isAgencyAuthenticated) {
+        agencyProvider.logout();
+      }
+
       final response = await ApiService.login(email, password);
-      
+
       if (response.containsKey('access_token')) {
         _token = response['access_token'];
         _user = User.fromJson(response['user']);
         ApiService.setToken(_token!);
-        
+
         _isLoading = false;
         notifyListeners();
         return true;
@@ -46,23 +53,29 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String name, String email, String password, {String? phone, String? address}) async {
+  Future<bool> register(String name, String email, String password,
+      {String? phone, String? address, AgencyProvider? agencyProvider}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // If an agency is logged in, log them out first
+      if (agencyProvider != null && agencyProvider.isAgencyAuthenticated) {
+        agencyProvider.logout();
+      }
+
       final response = await ApiService.register(name, email, password, phone: phone, address: address);
-      
+
       if (response.containsKey('access_token')) {
         _token = response['access_token'];
         _user = User.fromJson(response['user']);
         ApiService.setToken(_token!);
-        
+
         _isLoading = false;
         notifyListeners();
         return true;
       }
-      
+
       _isLoading = false;
       notifyListeners();
       return false;

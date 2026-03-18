@@ -1,0 +1,319 @@
+{
+  "menu_items": [
+    {
+      "name": "SALADE EXOTIQUE",
+      "price": 85,
+      "description": "Crevette, mangue, ananas, avocat, laitue, concombre"
+    },
+    {
+      "name": "SALADE FRUITS DE MER",
+      "price": 80,
+      "description": "Crevette, calamar, surimi, avocat, laitue, concombre"
+    },
+    {
+      "name": "CHIRASHI SAUMON",
+      "price": 85,
+      "description": "Riz vinaigré, saumon, avocat"
+    },
+    {
+      "name": "SALADE MAKI FRIT",
+      "price": 75,
+      "description": "Maki saumon frit, laitue, choux, concombre, avocat"
+    },
+    {
+      "name": "SALADES CHOUX ALGUES",
+      "price": 60,
+      "description": "Laitue, concombre, algue, vakami"
+    },
+    {
+      "name": "TOBIKO",
+      "price": 45,
+      "description": "Saumon, Surimi, Avocat, Creme cheese, Tobiko"
+    },
+    {
+      "name": "EBY FRY",
+      "price": 40,
+      "description": "Crevette pane, Avocat, Ciboulette"
+    },
+    {
+      "name": "RED",
+      "price": 40,
+      "description": "Crevette pane, Avocat, Cream cheese, Tobiko rouge"
+    },
+    {
+      "name": "MASSAGO",
+      "price": 40,
+      "description": "Surimi, Avocat, Massago"
+    },
+    {
+      "name": "SALAMON",
+      "price": 40,
+      "description": "Saumon Tempura, Avocat, Cream cheese, Massago"
+    },
+    {
+      "name": "SESAME",
+      "price": 40,
+      "description": "Saumon, Avocat, Sésame"
+    },
+    {
+      "name": "SAUMON",
+      "price": 40,
+      "description": "Saumon, Avocat, Concombre, Mayonnaise"
+    },
+    {
+      "name": "BLACK",
+      "price": 50,
+      "description": "Avocat, chaire de crabe, tobiko noir"
+    },
+    {
+      "name": "ALGUES",
+      "price": 40,
+      "description": "Avocat, concombre, algues"
+    },
+    {
+      "name": "BOSTON",
+      "price": 45,
+      "description": "Saumon cuit, avocat, Tobiko Red"
+    },
+    {
+      "name": "DRAGON D'OR",
+      "price": 50,
+      "description": "Crevettes Tempura, Concombre, Avocat, Cream cheese, Anguilles, Mangue"
+    },
+    {
+      "name": "FANTASIA",
+      "price": 50,
+      "description": "Riz, Chair de Crabe, Anguille, Cream cheese, Avocat, Tobiko. Surimi"
+    },
+    {
+      "name": "FRESH",
+      "price": 65,
+      "description": "Saumon, Cream cheese, Crevettes Tempura, Avocat, Tobiko"
+    },
+    {
+      "name": "PHILLY ROLL",
+      "price": 65,
+      "description": "Saumon Fume, Avocat, Cream cheese, Surimi, Tobiko"
+    },
+    {
+      "name": "FUITY ROLLS",
+      "price": 55,
+      "description": "Riz, Crevette panée, Ananas, Saumon flambé, Tobiko"
+    },
+    {
+      "name": "HAWAIIAN ROLLS",
+      "price": 50,
+      "description": "Crevette panée, Crabe, Mangue, Avocat, Saumon, Tobiko"
+    },
+    {
+      "name": "MANGO TANGO",
+      "price": 60,
+      "description": "Crevette tempura, Chair de Crabe, Avocat, Tobiko, Cream cheese, Mangue"
+    },
+    {
+      "name": "ALASKAN",
+      "price": 65,
+      "description": "Saumon pané, surimi, avocat, cream cheese, Massago"
+    },
+    {
+      "name": "ZIN ROLLS",
+      "price": 60,
+      "description": "Saumon, Surimi, Avocat, Cream cheese"
+    },
+    {
+      "name": "TIGER D'ASIE",
+      "price": 50,
+      "description": "Crevettes panés, avocat, Cream cheese, Crevettes cuits"
+    },
+    {
+      "name": "SUSHIROLLSFRY (Item 1)",
+      "price": 55,
+      "description": "Crevette tempura, Saumon tartare, Mangue, Laitue, Avocat, Tobiko"
+    },
+    {
+      "name": "Poulet Ananas WOK",
+      "price": 60,
+      "description": "Servi avec riz, Poulet et Ananas"
+    },
+    {
+      "name": "Poulet Epicé WOK",
+      "price": 55,
+      "description": "Servi avec riz, Poulet épicé"
+    },
+    {
+      "name": "Poulet Terriyaki WOK",
+      "price": 60,
+      "description": "Servi avec riz, Poulet Terriyaki"
+    },
+    {
+      "name": "Crevettes Ananas WOK",
+      "price": 80,
+      "description": "Servi avec riz, Crevettes et Ananas"
+    },
+    {
+      "name": "Crevettes & Calamars WOK",
+      "price": 75,
+      "description": "Servi avec riz, Crevettes et Calamars"
+    },
+    {
+      "name": "Fruits de Mer WOK",
+      "price": 85,
+      "description": "Servi avec riz, Fruits de Mer"
+    },
+    {
+      "name": "Nouilles Japonaises Végétariennes",
+      "price": 65,
+      "description": "Blé / Sarrasin, Végétariennes"
+    },
+    {
+      "name": "Nouilles Japonaises Poulet",
+      "price": 60,
+      "description": "Blé / Sarrasin, Poulet"
+    },
+    {
+      "name": "Nouilles Japonaises Mixtes",
+      "price": 95,
+      "description": "Blé / Sarrasin, Poulet et Crevettes"
+    },
+    {
+      "name": "Brochettes Boulettes de Poulet",
+      "price": 65,
+      "description": "3 pièces, Boulettes de Poulet"
+    },
+    {
+      "name": "Brochettes Poulet",
+      "price": 60,
+      "description": "3 pièces, Poulet"
+    },
+    {
+      "name": "Nems au Poulet",
+      "price": 60,
+      "description": "Nems au Poulet"
+    },
+    {
+      "name": "Nems au Fromage",
+      "price": 75,
+      "description": "Nems au Fromage"
+    },
+    {
+      "name": "Nems aux Crevettes",
+      "price": 75,
+      "description": "Nems aux Crevettes"
+    },
+    {
+      "name": "Poulet Frit",
+      "price": 55,
+      "description": "Friture, Poulet Frit"
+    },
+    {
+      "name": "Crevettes Panées",
+      "price": 65,
+      "description": "Friture, Crevettes Panées"
+    },
+    {
+      "name": "ASSORTIMENT MINI 2",
+      "price": 140,
+      "description": "22 pièces: MASSAGO 4PCS, SESAME 4PCS, CRUNCHY 6PCS, VOLCANO 8PCS"
+    },
+    {
+      "name": "ASSORTIMENT MINI 4",
+      "price": 160,
+      "description": "22 pièces: ZIN 4PCS, TIGER 4PCS, SAUMON FLASH 6PCS, MAKI CREVETTES 8PCS"
+    },
+    {
+      "name": "ASSORTIMENT MEDIUM 1",
+      "price": 240,
+      "description": "34 pièces: PIZZA SAUMON 08PCS, CRISPY POULET 06PCS, CRUNCHY 06PCS, EPY FLASH 06PCS, VOLCANO 08PCS"
+    },
+    {
+      "name": "ASSORTIMENT MEDIUM 2",
+      "price": 230,
+      "description": "28 pièces: MAKI MANGUE 08PCS, TIGER 04PCS, MANGO TANGO 04PCS, ZIN 04PCS, BLACK 04PCS, SESAME 04PCS"
+    },
+    {
+      "name": "ASSORTIMENT MEDIUM 3",
+      "price": 190,
+      "description": "29 pièces: MAKI CREVETTES 08PCS, SAUMON FLASH 06PCS, CRUNCHY 05PCS, ZIN 04PCS, CRISPY POULET 06PCS"
+    },
+    {
+      "name": "ASSORTIMENT LARGE 1",
+      "price": 300,
+      "description": "43 pièces: CRUNCHY 5PCS, EBY FLASH 5PCS, EBY FRY 4PCS, BLACK 4PCS, MASSAGO 4PCS, ZIN ROLL 4PCS, RLX SAUMON 6PCS, RLX CREVETTES 6PCS, VOLCANO 5PCS"
+    },
+    {
+      "name": "ASSORTIMENT LARGE 2",
+      "price": 350,
+      "description": "58 pièces: EBY FRY 8PCS, CRUNCHY 7PCS, EBY FLASH 7PCS, SESAME 8PCS, MASSAGO 8PCS, ZIN ROLL 8PCS, MAKI CREVETTES 6PCS, MAKI VEGETARIEN 6PCS"
+    },
+    {
+      "name": "ASSORTIMENT 80 PIECES",
+      "price": 700,
+      "description": "80 pièces: CRYNCHY 20PCS, SESAME 4PCS, TIGER D 8PCS, EBY FLASH 10PCS, BLACK 4PCS, MAKI CREVETTES 8PCS, SAUMON FLASH 10 PCS, ZIN ROLL 8PCS, EXOTIQUE ROLL 8PCS"
+    },
+    {
+      "name": "Banoffee Pie",
+      "price": 45,
+      "description": "Dessert"
+    },
+    {
+      "name": "Eau Minérale 50cl",
+      "price": 12,
+      "description": "Boisson"
+    },
+    {
+      "name": "Eau Minérale 1.5L",
+      "price": 20,
+      "description": "Boisson"
+    },
+    {
+      "name": "Oulmes Soda",
+      "price": 20,
+      "description": "Boisson"
+    },
+    {
+      "name": "Panaché",
+      "price": 20,
+      "description": "Boisson"
+    },
+    {
+      "name": "Jus avocat",
+      "price": 55,
+      "description": "Jus"
+    },
+    {
+      "name": "Jus d'orange",
+      "price": 50,
+      "description": "Jus"
+    },
+    {
+      "name": "Jus d'orange Mangue",
+      "price": 35,
+      "description": "Jus"
+    },
+    {
+      "name": "Jus d'orange Carotte",
+      "price": 50,
+      "description": "Jus"
+    },
+    {
+      "name": "Jus d'orange Ananas",
+      "price": 35,
+      "description": "Jus"
+    },
+    {
+      "name": "Mojito",
+      "price": 50,
+      "description": "Cocktail"
+    },
+    {
+      "name": "Jus de Citron",
+      "price": 35,
+      "description": "Jus"
+    },
+    {
+      "name": "Jus de Citron gingembre",
+      "price": 50,
+      "description": "Jus"
+    }
+  ]
+}

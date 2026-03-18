@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/agency_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -33,6 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _passwordController.text,
       phone: _phoneController.text,
       address: _addressController.text.isNotEmpty ? _addressController.text : null,
+      agencyProvider: context.read<AgencyProvider>(),
     );
 
     if (success && mounted) {

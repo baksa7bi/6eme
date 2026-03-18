@@ -1,0 +1,194 @@
+{
+  "petit_dejeuner": [
+    "LE FASSI",
+    "MARRAKCHI",
+    "PARISIEN",
+    "KIDS",
+    "HEALTHY",
+    "LE TURC",
+    "LE 6EME",
+    "CHAMALI"
+  ],
+  "breakfast_extras": [
+    "Omelette Nature",
+    "Omelette Fromage",
+    "Œuf au plat",
+    "Omelette Khlii",
+    "Viennoiserie",
+    "Msemen",
+    "Beghrir",
+    "Harcha",
+    "Beurre",
+    "Miel",
+    "Huile d’Olive",
+    "Confiture",
+    "Amlou",
+    "Pain",
+    "Œuf dur",
+    "Olives noires",
+    "Olives vertes",
+    "Frites"
+  ],
+  "entrees": [
+    "Salade César Terre et Mer",
+    "Salade Tartare",
+    "Sélection de Salades Marocaines",
+    "Salade César au Poulet",
+    "Salade Exotique",
+    "Salade Méditerranéenne",
+    "Salade Marocaine"
+  ],
+  "tajines": [
+    "Tajine Poulet olives citron",
+    "Tajine Bœuf fruits secs miel",
+    "Tajine Bœuf pruneaux"
+  ],
+  "pastilla": [
+    "Pastilla Poulet",
+    "Pastilla Fruits de mer"
+  ],
+  "saffa_rfissa": [
+    "Saffa Madfouna",
+    "Rfissa"
+  ],
+  "tangia": [
+    "Tangia jarret de veau"
+  ],
+  "couscous": [
+    "Couscous viande",
+    "Couscous poulet",
+    "Couscous végétarien"
+  ],
+  "pates": [
+    "Carbonara",
+    "Norvégienne",
+    "Bolognaise",
+    "Forestière",
+    "Fruits de mer",
+    "Fromages"
+  ],
+  "soupes": [
+    "Soupe de poissons"
+  ],
+  "plats": [
+    "Entrecôte grillée",
+    "Émincé de poulet",
+    "Brochettes merguez",
+    "Brochettes viande hachée",
+    "Brochettes mixte",
+    "Brochettes poulet",
+    "Gambas pil-pil",
+    "Escalope milanaise"
+  ],
+  "pizzas": [
+    "Margherita",
+    "César",
+    "Végétarienne",
+    "Pepperoni",
+    "Fruits de mer",
+    "Viande hachée",
+    "Thon",
+    "Pizza 4 saisons",
+    "Pizza fromages"
+  ],
+  "burgers_sandwiches": [
+    "American Hamburger",
+    "Chicken Burger",
+    "Sandwich Poulet",
+    "Sandwich Viande hachée",
+    "Sandwich Merguez",
+    "Sandwich Mixte"
+  ],
+  "tacos": [
+    "Tacos Poulet",
+    "Tacos Viande hachée",
+    "Tacos Nuggets",
+    "Tacos Mixte",
+    "Tacos Mexicain"
+  ],
+  "menu_enfant": [
+    "Nuggets + frites + jus",
+    "Cheeseburger + frites + jus"
+  ],
+  "desserts": [
+    "Gâteau du jour",
+    "Fondant pistache",
+    "Tiramisu",
+    "Fondant chocolat",
+    "Salade de fruits"
+  ],
+  "crepes_sucrees": [
+    "Nutella",
+    "Banane Nutella",
+    "Pistache",
+    "Fruits rouges"
+  ],
+  "crepes_salees": [
+    "Fromage",
+    "Poulet champignons",
+    "Fromage & saumon fumé"
+  ],
+  "gaufres": [
+    "Nutella",
+    "Fruits secs + glace"
+  ],
+  "boissons_chaudes": [
+    "Espresso",
+    "Café américain",
+    "Café au lait",
+    "Café séparé",
+    "Cappuccino",
+    "Nespresso",
+    "Chocolat chaud",
+    "Lait chaud/froid",
+    "Verveine au lait",
+    "Flat white",
+    "Nes Nes",
+    "Spécial 6ème",
+    "Latte pistache",
+    "Signature 6ème",
+    "Thé marocain",
+    "Verveine"
+  ],
+  "boissons_froides": [
+    "Mojito fruits",
+    "Mojito passion",
+    "Mojito fraise",
+    "Mojito classic",
+    "Pina Colada",
+    "Frappuccino caramel",
+    "Frappuccino vanilla",
+    "Frappuccino chocolat",
+    "Frappuccino café",
+    "Jus fraise",
+    "Jus orange",
+    "Jus mangue",
+    "Jus banane",
+    "Jus avocat",
+    "Jus pomme",
+    "Jus citron",
+    "Jus carotte",
+    "Jus ananas",
+    "Ice spécial 6ème",
+    "Ice latte",
+    "Ice pistache latte",
+    "Ice safran latte",
+    "Ice signature 6ème",
+    "Cocktail Signature 6ème",
+    "Cocktail Hawaïenne",
+    "Cocktail Tropical",
+    "Cocktail Énergétique",
+    "Soda",
+    "Orangina",
+    "Oulmes",
+    "Red Bull",
+    "Eau"
+  ],
+  "glaces": [
+    "2 boules",
+    "3 boules"
+  ],
+  "extra": [
+    "Gâteau d’anniversaire"
+  ]
+}

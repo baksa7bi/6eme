@@ -1,0 +1,554 @@
+{
+  "menu_items": [
+    {
+      "name": "Formule A - Ramadan",
+      "price": 59,
+      "description": "Harira marocaine ou soupe blanche, 3 dattes & 2 chebakias, 1 oeuf dur, Mesmen, Baghrir & Harcha, Batbout, Cake, Jus d'orange frais"
+    },
+    {
+      "name": "Formule B - Ramadan",
+      "price": 99,
+      "description": "Harira marocaine ou soupe blanche, 3 dattes & 2 chebakias, 1 oeuf dur, Nems (poulet, végétariens & viande hachée), 1 Batbout froid, 1 Batbout chaud, Tajine au choix (Poulet aux oignons ou Viande hachée), Jus d'orange, Thé ou café noir"
+    },
+    {
+      "name": "Formule C - Ramadan",
+      "price": 199,
+      "description": "Harira marocaine ou soupe blanche, 3 dattes & 2 chebakias, 1 oeuf dur, Pastilla fruits de mer, Pastilla poulet, Nems végétariens & Nems au fromage, Assiette marocaine (Mesmen nature, Mesmen m'ammar, Harcha, Baghrir, Batbout), Tajine au choix (Poulet ou bœuf), Jus au choix (Panaché, Orange, Détox), Thé ou café"
+    },
+    {
+      "name": "SALADE MAROCAINE",
+      "price": 30,
+      "description": "Entrée froide"
+    },
+    {
+      "name": "SALADE NIÇOISE",
+      "price": 45,
+      "description": "Entrée froide"
+    },
+    {
+      "name": "ASSORTIMENT SALADES",
+      "price": 45,
+      "description": "Entrée froide"
+    },
+    {
+      "name": "SALADE CESAR AU POULET",
+      "price": 60,
+      "description": "Entrée froide"
+    },
+    {
+      "name": "BRIOUATES ET CIGARS POULET",
+      "price": 60,
+      "description": "Entrée chaude, au poulet"
+    },
+    {
+      "name": "BRIOUATES ET CIGARS FRUITS DE MER",
+      "price": 75,
+      "description": "Entrée chaude, aux fruits de mer"
+    },
+    {
+      "name": "MINI PASTILLA FRUITS DE MER",
+      "price": 85,
+      "description": "Entrée chaude"
+    },
+    {
+      "name": "MINI PASTILLA POULET",
+      "price": 70,
+      "description": "Entrée chaude"
+    },
+    {
+      "name": "TAGINE DE SARDINE 250g",
+      "price": 45,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TANGIA DE POULET 250g",
+      "price": 70,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TANGIA DE POULET ½Kg",
+      "price": 100,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TAGINE VIANDE HACHEE 250g",
+      "price": 75,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TAGINE VIANDE HACHEE ½Kg",
+      "price": 130,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TAGINE DE BŒUF AU PRUNEAUX 250g",
+      "price": 80,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TAGINE DE BŒUF AU PRUNEAUX ½Kg",
+      "price": 110,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TAGINE DE BŒUF AU PRUNEAUX 1Kg",
+      "price": 270,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "POULET CITRON 250g",
+      "price": 65,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "POULET CITRON ½Kg",
+      "price": 90,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "POULET CITRON ENTIER",
+      "price": 130,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TANGIA AU JARET DE VEAU 250g",
+      "price": 80,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TANGIA AU JARET DE VEAU ½Kg",
+      "price": 139,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "TANGIA AU JARET DE VEAU 1Kg",
+      "price": 270,
+      "description": "Garni selon les légumes de saison"
+    },
+    {
+      "name": "EMINCE DE POULET SAUCE CHAMPIGNON",
+      "price": 70,
+      "description": "Garnitures au choix"
+    },
+    {
+      "name": "ESCALOPE POULET",
+      "price": 75,
+      "description": "Garnitures au choix"
+    },
+    {
+      "name": "POULET CORDON BLEU",
+      "price": 75,
+      "description": "Garnitures au choix"
+    },
+    {
+      "name": "PATE FRUIT DE MER",
+      "price": 85,
+      "description": "Pâtes"
+    },
+    {
+      "name": "PATE POULET CHAMPIGNON",
+      "price": 70,
+      "description": "Pâtes"
+    },
+    {
+      "name": "SPAGHETTI BOLOGNAISE",
+      "price": 65,
+      "description": "Pâtes"
+    },
+    {
+      "name": "PIZZA MARGUERITTA",
+      "price": 55,
+      "description": "Snacking"
+    },
+    {
+      "name": "PIZZA VIANDE HACHEE",
+      "price": 65,
+      "description": "Snacking"
+    },
+    {
+      "name": "PIZZA POULET",
+      "price": 65,
+      "description": "Snacking"
+    },
+    {
+      "name": "PIZZA 4 SAISONS",
+      "price": 79,
+      "description": "Snacking"
+    },
+    {
+      "name": "PIZZA THON",
+      "price": 60,
+      "description": "Snacking"
+    },
+    {
+      "name": "PIZZA FRUITS DE MER",
+      "price": 89,
+      "description": "Snacking"
+    },
+    {
+      "name": "TACOS VIANDE HACHEE",
+      "price": 49,
+      "description": "Snacking"
+    },
+    {
+      "name": "TACOS POULET",
+      "price": 49,
+      "description": "Snacking"
+    },
+    {
+      "name": "TACOS SAUCISSE",
+      "price": 50,
+      "description": "Snacking"
+    },
+    {
+      "name": "TACOS BOULFAF",
+      "price": 55,
+      "description": "Snacking"
+    },
+    {
+      "name": "TACOS MIXTE",
+      "price": 55,
+      "description": "Snacking"
+    },
+    {
+      "name": "CHICKEN BURGER",
+      "price": 55,
+      "description": "Snacking"
+    },
+    {
+      "name": "BURGER VIANDE",
+      "price": 60,
+      "description": "Snacking"
+    },
+    {
+      "name": "MIXTE BURGER",
+      "price": 80,
+      "description": "Viande hachée et chicken"
+    },
+    {
+      "name": "CHEESE BURGER",
+      "price": 60,
+      "description": "Snacking"
+    },
+    {
+      "name": "SAFFA MARDOUMA",
+      "price": 70,
+      "description": "Chhiwates de la semaine"
+    },
+    {
+      "name": "RFISSA",
+      "price": 70,
+      "description": "Chhiwates de la semaine"
+    },
+    {
+      "name": "KOURINE",
+      "price": 70,
+      "description": "Chhiwates de la semaine"
+    },
+    {
+      "name": "DWARA",
+      "price": 65,
+      "description": "Chhiwates de la semaine"
+    },
+    {
+      "name": "CREPES NUTELLA",
+      "price": 30,
+      "description": "Crêpes"
+    },
+    {
+      "name": "CREPES NUTELLA BANANE",
+      "price": 35,
+      "description": "Crêpes"
+    },
+    {
+      "name": "CREPES OREO",
+      "price": 40,
+      "description": "Crêpes"
+    },
+    {
+      "name": "CREPES KUNAFA PISTACHE",
+      "price": 45,
+      "description": "Crêpes"
+    },
+    {
+      "name": "CREPES FRUITS SECS",
+      "price": 45,
+      "description": "Crêpes"
+    },
+    {
+      "name": "PANCAKE NUTELLA",
+      "price": 30,
+      "description": "Pancake"
+    },
+    {
+      "name": "PANCAKE NUTELLA BANANE",
+      "price": 35,
+      "description": "Pancake"
+    },
+    {
+      "name": "PANCAKE FRAMBOISE",
+      "price": 40,
+      "description": "Pancake"
+    },
+    {
+      "name": "SALADE DE FRUITS DE SAISON",
+      "price": 35,
+      "description": "Dessert"
+    },
+    {
+      "name": "ASSIETTE DE FRUITS DE SAISON",
+      "price": 40,
+      "description": "Dessert"
+    },
+    {
+      "name": "TIRAMISU",
+      "price": 40,
+      "description": "Dessert"
+    },
+    {
+      "name": "FONDANT AU CHOCOLAT",
+      "price": 50,
+      "description": "Dessert"
+    },
+    {
+      "name": "CREME CARAMEL",
+      "price": 30,
+      "description": "Dessert"
+    },
+    {
+      "name": "CHOCOLAT DELIGHT",
+      "price": 45,
+      "description": "Glace chocolat, topping chocolat, OREO, Chantilly"
+    },
+    {
+      "name": "6EME",
+      "price": 55,
+      "description": "Glace vanille, glace fraise, topping fraise, KITKAT"
+    },
+    {
+      "name": "ESPRESSO",
+      "price": 17,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "AMERICAIN",
+      "price": 19,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CAFE NESS NESS",
+      "price": 20,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CAFE CREME",
+      "price": 20,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "ESPRESSO AROMATISE",
+      "price": 21,
+      "description": "Chocolat/caramel/vanille"
+    },
+    {
+      "name": "LAIT CHAUD OU FROID",
+      "price": 19,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CHOCOLAT CHAUD",
+      "price": 19,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CHOCOLAT CHANTILLE",
+      "price": 24,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CHOCOLAT FONDUE",
+      "price": 29,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CAPUCCINO ITALIEN",
+      "price": 22,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "MOCACCINO",
+      "price": 24,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "THE MAROCAIN",
+      "price": 19,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "INFUSIONS (LAIT OU EAU)",
+      "price": 19,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "CAPUCCINO VIENNOIS",
+      "price": 25,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "LATTE MACCIATO",
+      "price": 30,
+      "description": "Vanille, caramel, chocolat"
+    },
+    {
+      "name": "JUS D'ORANGE",
+      "price": 25,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE BANANE",
+      "price": 29,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE FRAISE",
+      "price": 30,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS D'ANANAS",
+      "price": 39,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE CITRON",
+      "price": 25,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE POMME",
+      "price": 28,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE MANGUE",
+      "price": 39,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS D'AVOCAT",
+      "price": 40,
+      "description": "Jus frais"
+    },
+    {
+      "name": "PANACHE FRUIT",
+      "price": 37,
+      "description": "Mélange de jus"
+    },
+    {
+      "name": "SAHARA",
+      "price": 45,
+      "description": "Carotte, gingembre, ananas, citron"
+    },
+    {
+      "name": "MENARA",
+      "price": 45,
+      "description": "Concombre, pomme vert, salade verte, citron"
+    },
+    {
+      "name": "RED BANANE",
+      "price": 45,
+      "description": "Betterave, banane, orange"
+    },
+    {
+      "name": "VITALITE",
+      "price": 45,
+      "description": "Betterave, pomme, carotte"
+    },
+    {
+      "name": "ANANAS MIXTE",
+      "price": 45,
+      "description": "Smoothie"
+    },
+    {
+      "name": "BEURRY PECHE",
+      "price": 45,
+      "description": "Smoothie"
+    },
+    {
+      "name": "PINACOLADA",
+      "price": 45,
+      "description": "Ananas, lait de coco"
+    },
+    {
+      "name": "BLUE HAWAI",
+      "price": 45,
+      "description": "Jus d'ananas, mangue, blue"
+    },
+    {
+      "name": "FLORIDA",
+      "price": 45,
+      "description": "Orange, citron, grenadine, ananas"
+    },
+    {
+      "name": "MULTI VITAMINES",
+      "price": 45,
+      "description": "Fraise, carottes, kiwi, mangue"
+    },
+    {
+      "name": "ALASKA",
+      "price": 45,
+      "description": "Ananas, pomme, citron, curacao bleue, menthe"
+    },
+    {
+      "name": "6EME COCKTAIL",
+      "price": 45,
+      "description": "Framboise, mangue, kiwi, orange, boule de glace"
+    },
+    {
+      "name": "MOJITO CLASSIC",
+      "price": 45,
+      "description": "Mojito classique"
+    },
+    {
+      "name": "MOJITO FRUITS ROUGES",
+      "price": 45,
+      "description": "Mojito aux fruits rouges"
+    },
+    {
+      "name": "MOJITO ANANAS",
+      "price": 45,
+      "description": "Mojito à l'ananas"
+    },
+    {
+      "name": "MOJITO BLUE",
+      "price": 45,
+      "description": "Mojito blue"
+    },
+    {
+      "name": "SIDI ALI 50 CL",
+      "price": 12,
+      "description": "Eau minérale"
+    },
+    {
+      "name": "SIDI ALI 1.5 L",
+      "price": 20,
+      "description": "Eau minérale"
+    },
+    {
+      "name": "ORANGINA",
+      "price": 25,
+      "description": "Soda"
+    },
+    {
+      "name": "SODA",
+      "price": 23,
+      "description": "Soda"
+    },
+    {
+      "name": "RED BULL",
+      "price": 35,
+      "description": "Boisson énergisante"
+    }
+  ]
+}

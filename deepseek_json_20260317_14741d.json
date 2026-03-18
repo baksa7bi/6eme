@@ -1,0 +1,754 @@
+{
+  "menu_items": [
+    {
+      "name": "Express",
+      "price": 45,
+      "description": "Assortiment de viennoiseries, tranche de cake, pain cake, soupe, boisson chaude au choix, bouteille d'eau 33cl, panier de pain traditionnel ou corbeille de pistolets, jus d'orange ou banane ou carotte"
+    },
+    {
+      "name": "Fassi",
+      "price": 45,
+      "description": "Tagine œuf au khlli, baghrir, batboute, olives noir, miel, beurre, confiture, huile d'olive, yaourt aux fruits, boisson chaude au choix, soupe, bouteille d'eau 33cl, panier de pain traditionnel ou corbeille de pistolets, mini jus d'orange ou banane ou carotte"
+    },
+    {
+      "name": "Marrakchi",
+      "price": 45,
+      "description": "Msemen, baghrir, batboute, harcha, omelette au fromage ou nature, miel, confiture, beurre, olives noirs, amlou, jben, huile d'olive, soupe du jour, boisson chaude au choix, bouteille d'eau 33cl, panier de pain traditionnel ou corbeille de pistolets, mini jus d'orange ou banane ou carotte"
+    },
+    {
+      "name": "Healthy",
+      "price": 45,
+      "description": "Toast au fromage blanc et avocat, toast omelette, jus detox (citron gingembre ou concombre citron menthe), granula fruits rouges et yaourt, salade de fruits, boisson chaude au choix, pain grillé, soupe, bouteille d'eau 33cl"
+    },
+    {
+      "name": "Turkish",
+      "price": 99,
+      "description": "Salade variées (salade verte, concombre, oignon, tomate), olive noire, olive verte, omelette tomate, omelette charcuterie, pain grillé, assiette fromage, charcuterie et mergez, huile d'olive, miel, confiture, beurre, jben, cachère, mini jus d'orange ou carotte ou banane, soupe, boisson chaude, bouteille d'eau 33cl, panier de pain traditionnelle ou corbeille pistolets"
+    },
+    {
+      "name": "Turkish (pour 2 personnes)",
+      "price": 180,
+      "description": "Salade variées (salade verte, concombre, oignon, tomate), olive noire, olive verte, omelette tomate, omelette charcuterie, pain grillé, assiette fromage, charcuterie et mergez, huile d'olive, miel, confiture, beurre, jben, cachère, mini jus d'orange ou carotte ou banane, soupe, boisson chaude, bouteille d'eau 33cl, panier de pain traditionnelle ou corbeille pistolets"
+    },
+    {
+      "name": "6ème",
+      "price": 45,
+      "description": "Omelette au fromage ou nature, toast au fromage, soupe, yaourt aux fruits, tranche de cake, viennoiseries, miel, jben, beurre, confiture, olive noirs, huile d'olive, bouteille d'eau 33cl, panier de pain traditionnel ou corbeille de pistolets, jus d'orange ou banane ou carotte"
+    },
+    {
+      "name": "Américain",
+      "price": 45,
+      "description": "Omelette champignon, saucisse, charcuterie, salade fruit grand, pain de mie grillé, 2 tranches de cake, boisson chaude, mini jus d'orange ou carotte ou banane, soupe, bouteille d'eau 33cl, panier de pain traditionnelle ou corbeille pistolets, pain cake Nutella (Banane, Kiwi)"
+    },
+    {
+      "name": "Petit déjeuner Kids",
+      "price": 45,
+      "description": "Mini crêpe (Nutella ou miel), pain cake, mini jus d'orange ou carotte ou banane, boisson chaude, soupe, bouteille d'eau 33cl, panier de pain traditionnelle ou corbeille pistolets"
+    },
+    {
+      "name": "M'QILA CREVETTES",
+      "price": 59,
+      "description": "Notre spécialité m'qila aux crevettes"
+    },
+    {
+      "name": "M'QILA MIXTE",
+      "price": 65,
+      "description": "Notre spécialité m'qila mixte"
+    },
+    {
+      "name": "M'QILA ROYALE",
+      "price": 75,
+      "description": "Notre spécialité m'qila royale"
+    },
+    {
+      "name": "Omelette au Khlii",
+      "price": 35,
+      "description": "À la carte"
+    },
+    {
+      "name": "Omelette au Fromage",
+      "price": 35,
+      "description": "À la carte"
+    },
+    {
+      "name": "Omelette aux Champignons",
+      "price": 35,
+      "description": "À la carte"
+    },
+    {
+      "name": "Toast au Fromage",
+      "price": 40,
+      "description": "À la carte"
+    },
+    {
+      "name": "Assiette Marocaine",
+      "price": 30,
+      "description": "Msemen, Harcha, Batbout, Baghrir"
+    },
+    {
+      "name": "Croque Monsieur",
+      "price": 60,
+      "description": "À la carte"
+    },
+    {
+      "name": "Croque Madame",
+      "price": 65,
+      "description": "À la carte"
+    },
+    {
+      "name": "Salade de Fruits",
+      "price": 40,
+      "description": "À la carte"
+    },
+    {
+      "name": "Panier de Viennoiseries",
+      "price": 30,
+      "description": "À la carte"
+    },
+    {
+      "name": "Supplément Pain Grillé",
+      "price": 15,
+      "description": "À la carte"
+    },
+    {
+      "name": "Salade avocat aux crevettes, parmesan et roquette",
+      "price": 95,
+      "description": "Entrée"
+    },
+    {
+      "name": "Salade César au poulet",
+      "price": 70,
+      "description": "Œufs de caille, croutons, parmesan, anchois, poulet pané"
+    },
+    {
+      "name": "Salade César aux gambas",
+      "price": 90,
+      "description": "Crevettes grillées, œufs de caille, parmesan, anchois, croutons"
+    },
+    {
+      "name": "Salade 6ème",
+      "price": 99,
+      "description": "Laïtue iceberg, crevettes, moules, calamars, surimi, ananas, mangue, vinaigrette à la mangue"
+    },
+    {
+      "name": "Salade chèvre chaud",
+      "price": 90,
+      "description": "Miel, chutney de figue"
+    },
+    {
+      "name": "Crevettes pilpil au provençale",
+      "price": 80,
+      "description": "Entrée"
+    },
+    {
+      "name": "Soupe de poisson",
+      "price": 85,
+      "description": "Entrée"
+    },
+    {
+      "name": "Pâtes poulet et champignons à la sauce Alfredo",
+      "price": 85,
+      "description": "Pâtes"
+    },
+    {
+      "name": "Spaghetti bolognaise",
+      "price": 70,
+      "description": "Pâtes"
+    },
+    {
+      "name": "Penne Arrabiata",
+      "price": 75,
+      "description": "Pâtes"
+    },
+    {
+      "name": "Tagliatelle aux deux saumons",
+      "price": 95,
+      "description": "Saumon frais et fumé à la crème"
+    },
+    {
+      "name": "Penne 4 fromages au four",
+      "price": 85,
+      "description": "Fromage bleu, parmesan, mozzarella, edam"
+    },
+    {
+      "name": "Pâtes aux fruits de mer",
+      "price": 99,
+      "description": "Pâtes à la sauce blanche crémeuse, garnies de crevettes et moules"
+    },
+    {
+      "name": "Tagine de poulet",
+      "price": 95,
+      "description": "Olives meslala, citron confit et frites"
+    },
+    {
+      "name": "Tagine de bœuf aux pruneaux",
+      "price": 105,
+      "description": "Amandes grillées, œufs de caille, abricots séchés"
+    },
+    {
+      "name": "Tangia Marrakchia",
+      "price": 149,
+      "description": "Plat marocain traditionnel"
+    },
+    {
+      "name": "Méchoui",
+      "price": 159,
+      "description": "Légumes grillés"
+    },
+    {
+      "name": "Filet de bœuf",
+      "price": 195,
+      "description": "Purée, asperges grillées, sauce au choix"
+    },
+    {
+      "name": "Entrecôte",
+      "price": 160,
+      "description": "Frites et asperges grillées"
+    },
+    {
+      "name": "Pavé de saumon grillé",
+      "price": 195,
+      "description": "Sauce tartare, riz, légumes sautés"
+    },
+    {
+      "name": "Mariage de poisson",
+      "price": 210,
+      "description": "Pavé de saumon, dorade, espadon, sauce crevettes, légumes sautés et purée"
+    },
+    {
+      "name": "Émincé de poulet à la sauce champignon",
+      "price": 95,
+      "description": "Plat"
+    },
+    {
+      "name": "Émincé de bœuf à la sauce champignon",
+      "price": 105,
+      "description": "Plat"
+    },
+    {
+      "name": "Émincé mixte",
+      "price": 129,
+      "description": "Plat"
+    },
+    {
+      "name": "Escalope de poulet milanaise",
+      "price": 90,
+      "description": "Gratinée au fromage servie avec penne champignon à la crème"
+    },
+    {
+      "name": "Poulet Mexicain",
+      "price": 90,
+      "description": "Riz oriental, légumes sautés et sauce champignon"
+    },
+    {
+      "name": "½ poulet grillé",
+      "price": 129,
+      "description": "avec 2 accompagnements"
+    },
+    {
+      "name": "Brochettes de Poulet",
+      "price": 89,
+      "description": "Servies avec garniture au choix et sauce champignon"
+    },
+    {
+      "name": "Brochettes de Viande Hachée",
+      "price": 89,
+      "description": "Servies avec garniture au choix et sauce champignon"
+    },
+    {
+      "name": "Brochettes Mixtes Grill",
+      "price": 89,
+      "description": "Assortiment de poulet, viande hachée et merguez, accompagnées de sauce champignon et garniture au choix"
+    },
+    {
+      "name": "Brochettes 6ème",
+      "price": 89,
+      "description": "Délicieux mélange de brochettes d'espadon, saumon et crevettes grises, servies avec sauce tartare, riz basmati et légumes grillés"
+    },
+    {
+      "name": "Brochettes de Saumon",
+      "price": 89,
+      "description": "Brochettes de saumon grillé, accompagnées de deux garnitures au choix"
+    },
+    {
+      "name": "Brochettes d'Espadon",
+      "price": 89,
+      "description": "Brochettes d'espadon grillé, accompagnées de deux garnitures au choix"
+    },
+    {
+      "name": "JUS D'ORANGE",
+      "price": 35,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE CITRON",
+      "price": 35,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE CAROTTE",
+      "price": 35,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE BANANE",
+      "price": 35,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE POMME",
+      "price": 35,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE FRAISE",
+      "price": 40,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS D'ANANAS",
+      "price": 50,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE KIWI",
+      "price": 45,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS DE MANGUE",
+      "price": 50,
+      "description": "Jus frais"
+    },
+    {
+      "name": "JUS D'AVOCAT",
+      "price": 49,
+      "description": "Jus frais"
+    },
+    {
+      "name": "AVOCAT FRUITS SEC",
+      "price": 55,
+      "description": "Jus d'avocat aux fruits secs"
+    },
+    {
+      "name": "PANACHE",
+      "price": 55,
+      "description": "Mélange de jus"
+    },
+    {
+      "name": "MOJITO",
+      "price": 49,
+      "description": "Cocktail"
+    },
+    {
+      "name": "PINA COLADA",
+      "price": 55,
+      "description": "Ananas, Lait de coco, Orange"
+    },
+    {
+      "name": "FRAMBOISIER",
+      "price": 59,
+      "description": "Sorbet de framboise, jus d'orange"
+    },
+    {
+      "name": "GINGER CAN",
+      "price": 50,
+      "description": "Gingembre, citron menthe"
+    },
+    {
+      "name": "TOP ENERGIE",
+      "price": 60,
+      "description": "Avocat, fruits secs, miel, caramel"
+    },
+    {
+      "name": "TROPICAL",
+      "price": 50,
+      "description": "Mangue, Ananas, Orange"
+    },
+    {
+      "name": "SPECIAL TOPIC",
+      "price": 55,
+      "description": "Orange, Ananas, Mangue, Grenadine"
+    },
+    {
+      "name": "6 EME COCKTAIL",
+      "price": 79,
+      "description": "Ananas, Mangue, Papaye, Pêche, Boule de glace fraise, Crème chantilly"
+    },
+    {
+      "name": "Fondant chocolat avec glace",
+      "price": 70,
+      "description": "Dessert"
+    },
+    {
+      "name": "Tiramisu",
+      "price": 45,
+      "description": "Dessert"
+    },
+    {
+      "name": "Gâteau du jour",
+      "price": 45,
+      "description": "Dessert"
+    },
+    {
+      "name": "Panna Cotta",
+      "price": 49,
+      "description": "Crème onctueuse à la vanille"
+    },
+    {
+      "name": "Iced Coffee",
+      "price": 40,
+      "description": "Café glacé"
+    },
+    {
+      "name": "Latte Macchiato",
+      "price": 40,
+      "description": "Sirop au choix"
+    },
+    {
+      "name": "Thé Glacé",
+      "price": 55,
+      "description": "Boisson fraîche"
+    },
+    {
+      "name": "Caramel Frappuccino",
+      "price": 50,
+      "description": "Boisson fraîche"
+    },
+    {
+      "name": "Milkshake",
+      "price": 50,
+      "description": "Au choix"
+    },
+    {
+      "name": "Smoothie Fresier",
+      "price": 60,
+      "description": "Purée de fraise, sorbet fraise, orange"
+    },
+    {
+      "name": "Smoothie Tropical",
+      "price": 60,
+      "description": "Mangue, ananas, fraise, orange"
+    },
+    {
+      "name": "Smoothie 6ème Café",
+      "price": 70,
+      "description": "Purée de fraise, mangue, fruits de passion, framboise"
+    },
+    {
+      "name": "Smoothie Le Kech",
+      "price": 60,
+      "description": "Carotte, miel, orange, cannelle"
+    },
+    {
+      "name": "Smoothie Le Chocolat",
+      "price": 60,
+      "description": "Glace chocolat, yaourt, miel, banane"
+    },
+    {
+      "name": "ESPRESSO",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "CAFE AMERICAIN",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "CAFE AU LAIT",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "CAFE SEPARE",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "DOUBLE ESPRESSO",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "CAPPUCCINO",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "NESPRESSO",
+      "price": 25,
+      "description": "Café"
+    },
+    {
+      "name": "CHOCOLAT CHAUD",
+      "price": 25,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "LAIT CHAUD",
+      "price": 15,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "VERVEINE AU LAIT",
+      "price": 25,
+      "description": "Infusion"
+    },
+    {
+      "name": "VERVEINE SIMPLE",
+      "price": 20,
+      "description": "Infusion"
+    },
+    {
+      "name": "THE NOIR",
+      "price": 25,
+      "description": "Thé"
+    },
+    {
+      "name": "THE A LA MENTHE",
+      "price": 25,
+      "description": "Thé"
+    },
+    {
+      "name": "THE INFUSION TCHABA",
+      "price": 28,
+      "description": "Infusion"
+    },
+    {
+      "name": "CHOCOLAT FONDU",
+      "price": 30,
+      "description": "Boisson chaude"
+    },
+    {
+      "name": "COCA COLA",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "COCA ZERO",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "SPRITE",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "SCHWEPPES CITRON",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "SCHWEPPES TONIC",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "HAWAII",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "POMS",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "ORANGINA",
+      "price": 30,
+      "description": "Soda"
+    },
+    {
+      "name": "RED BULL",
+      "price": 50,
+      "description": "Boisson énergisante"
+    },
+    {
+      "name": "SIDI ALI 50 CL",
+      "price": 20,
+      "description": "Eau minérale"
+    },
+    {
+      "name": "SIDI ALI 1.5 L",
+      "price": 25,
+      "description": "Eau minérale"
+    },
+    {
+      "name": "OULMES 50 CL",
+      "price": 22,
+      "description": "Eau gazeuse"
+    },
+    {
+      "name": "OULMES 1 L",
+      "price": 25,
+      "description": "Eau gazeuse"
+    },
+    {
+      "name": "PERRIER 50 CL",
+      "price": 22,
+      "description": "Eau gazeuse"
+    },
+    {
+      "name": "Crêpes Nutella",
+      "price": 40,
+      "description": "Crêpe sucrée"
+    },
+    {
+      "name": "Crêpes Nutella Banane",
+      "price": 45,
+      "description": "Crêpe sucrée"
+    },
+    {
+      "name": "Crêpes Nutella Fruits Secs",
+      "price": 55,
+      "description": "Crêpe sucrée"
+    },
+    {
+      "name": "Crêpes 6ème",
+      "price": 85,
+      "description": "Nutella, glace vanille, amandes"
+    },
+    {
+      "name": "Crêpes Kunafa pistache",
+      "price": 75,
+      "description": "Crêpe sucrée"
+    },
+    {
+      "name": "Crêpes Mixte",
+      "price": 65,
+      "description": "2 sauces au choix : chocolat noir, chocolat blanc, chocolat au lait, coulis de fruits rouges, sauce pistache"
+    },
+    {
+      "name": "Crêpes fromage",
+      "price": 50,
+      "description": "Crêpe salée"
+    },
+    {
+      "name": "Crêpes poulet & champignons",
+      "price": 60,
+      "description": "Crêpe salée"
+    },
+    {
+      "name": "Crêpes charcuterie",
+      "price": 65,
+      "description": "Crêpe salée"
+    },
+    {
+      "name": "Trio Chocolat",
+      "price": 38,
+      "description": "Gaufre : Chocolat blanc, chocolat noir, chocolat au lait"
+    },
+    {
+      "name": "Banane et Noix de Coco",
+      "price": 42,
+      "description": "Gaufre : Banane et noix de coco, trio chocolat"
+    },
+    {
+      "name": "Oreo",
+      "price": 52,
+      "description": "Gaufre : Oreo croquant, trio chocolat"
+    },
+    {
+      "name": "Speculoos",
+      "price": 52,
+      "description": "Gaufre : Spéculoos, caramel beurre salé, chocolat blanc"
+    },
+    {
+      "name": "Crumble",
+      "price": 58,
+      "description": "Gaufre : Crumble noisette"
+    },
+    {
+      "name": "Gauffre Kunafa pistache",
+      "price": 60,
+      "description": "Gaufre"
+    },
+    {
+      "name": "Gauffre Mixté",
+      "price": 60,
+      "description": "2 sauces au choix : chocolat noir, chocolat blanc, chocolat au lait, coulis de fruits rouges, sauce pistache"
+    },
+    {
+      "name": "Tout Chocolat",
+      "price": 60,
+      "description": "Pancakes : Mousse au chocolat et myrtilles"
+    },
+    {
+      "name": "Pancakes à la vanille et fruits rouges",
+      "price": 60,
+      "description": "Pancakes"
+    },
+    {
+      "name": "Pancake Kunafa pistache",
+      "price": 75,
+      "description": "Pancake"
+    },
+    {
+      "name": "Chocobreak",
+      "price": 65,
+      "description": "Glace au chocolat, éclats de KitKat, coulis de chocolat noir, crème chantilly"
+    },
+    {
+      "name": "Oreo Delight",
+      "price": 60,
+      "description": "Glace vanille, morceaux d'Oreo, sauce caramel, noix concassées"
+    },
+    {
+      "name": "Crunchy Surprise",
+      "price": 68,
+      "description": "Glace praliné, KitKat émietté, coulis de fruits rouges, amandes grillées"
+    },
+    {
+      "name": "Sweet Layers",
+      "price": 70,
+      "description": "Glace à la fraise, crumble d'Oreo, mousse au chocolat, garniture de fraises fraîches"
+    },
+    {
+      "name": "Dreamy Delight",
+      "price": 72,
+      "description": "Glace à la vanille, morceaux de KitKat et Oreo, coulis de caramel, noix de coco râpée"
+    },
+    {
+      "name": "Sauce Chocolat Noir",
+      "price": 10,
+      "description": "Topping"
+    },
+    {
+      "name": "Coulis de Caramel",
+      "price": 10,
+      "description": "Topping"
+    },
+    {
+      "name": "Noix Concassées",
+      "price": 8,
+      "description": "Topping"
+    },
+    {
+      "name": "Croustillants de Caramel",
+      "price": 8,
+      "description": "Topping"
+    },
+    {
+      "name": "Amandes Grillées",
+      "price": 8,
+      "description": "Topping"
+    },
+    {
+      "name": "Pépites de Chocolat",
+      "price": 8,
+      "description": "Topping"
+    },
+    {
+      "name": "Fruits Frais",
+      "price": 10,
+      "description": "Topping"
+    },
+    {
+      "name": "Crème Chantilly",
+      "price": 12,
+      "description": "Topping"
+    }
+  ]
+}

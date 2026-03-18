@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/agency_provider.dart';
 import '../providers/favorite_provider.dart';
 import 'register_page.dart';
 
@@ -58,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                             final success = await auth.login(
                               _emailController.text,
                               _passwordController.text,
+                              agencyProvider: context.read<AgencyProvider>(),
                             );
                             if (success && mounted) {
                               // Refresh favorites for the logged in user

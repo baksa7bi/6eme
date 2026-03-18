@@ -9,6 +9,7 @@ import 'providers/order_provider.dart';
 import 'providers/reservation_provider.dart';
 import 'providers/favorite_provider.dart';
 import 'providers/home_provider.dart';
+import 'providers/agency_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ReservationProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => AgencyProvider()),
       ],
       child: const CafeApp(),
     ),

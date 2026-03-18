@@ -13,8 +13,8 @@ class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
-  static const String baseUrl = 'https://api.sfw-digital.com/api'; 
-  // static const String baseUrl = 'http://192.168.100.40:8000/api'; 
+  // static const String baseUrl = 'https://api.sfw-digital.com/api'; 
+  static const String baseUrl = 'http://192.168.100.183:8000/api'; 
   static String get storageUrl {
     if (baseUrl.endsWith('/api')) {
       return baseUrl.substring(0, baseUrl.length - 4) + '/storage';
@@ -131,12 +131,16 @@ class ApiService {
 
   // Cafes
   static Future<List<Cafe>> getCafes() async {
-    final response = await http.get(Uri.parse('$baseUrl/cafes'), headers: _headers);
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((json) => Cafe.fromJson(json)).toList();
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/cafes'), headers: _headers);
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.map((json) => Cafe.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print('Error in getCafes: $e');
     }
-    throw Exception('Failed to load cafes');
+    return [];
   }
 
   // Menu Items
@@ -383,18 +387,28 @@ class ApiService {
   }
 
   static Future<bool> requestCoupon(int userId, File imageFile, double amount) async {
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/coupon-requests'));
-    request.headers.addAll({
-      'Authorization': 'Bearer $_token',
-      'Accept': 'application/json',
-    });
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/coupon-requests'));
+      request.headers.addAll({
+        'Authorization': 'Bearer $_token',
+        'Accept': 'application/json',
+      });
 
-    request.fields['user_id'] = userId.toString();
-    request.fields['amount'] = amount.toString();
-    request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      request.fields['user_id'] = userId.toString();
+      request.fields['amount'] = amount.toString();
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
-    final response = await request.send();
-    return response.statusCode == 201;
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      debugPrint('API_LOG: Coupon Request Status: ${response.statusCode}');
+      debugPrint('API_LOG: Coupon Request Body: ${response.body}');
+      
+      return response.statusCode == 201;
+    } catch (e) {
+      debugPrint('API_LOG_ERROR: requestCoupon failed: $e');
+      rethrow;
+    }
   }
 
   static Future<List<Map<String, dynamic>>> getCouponRequests({int? userId}) async {
@@ -454,5 +468,94 @@ class ApiService {
       headers: _headers,
     );
     return response.statusCode == 204;
+  }
+
+  // Agency Auth
+  static Future<Map<String, dynamic>> agencyLogin(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agency/login'),
+      headers: _headers,
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    return jsonDecode(response.body);
+  }
+
+  // Agency Visits
+  static Future<List<Map<String, dynamic>>> getAgencyVisits() async {
+    final response = await http.get(Uri.parse('$baseUrl/agency-visits'), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    }
+    return [];
+  }
+
+  static Future<bool> submitAgencyVisit(Map<String, dynamic> visitData) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agency-visits'),
+      headers: _headers,
+      body: jsonEncode(visitData),
+    );
+    return response.statusCode == 201;
+  }
+
+  static Future<bool> updateVisitSpentAmount(dynamic visitId, double amount) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agency-visits/$visitId/spent-amount'),
+      headers: _headers,
+      body: jsonEncode({'spent_amount': amount}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> confirmVisitPayment(dynamic visitId, File proofFile) async {
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/agency-visits/$visitId/confirm-payment'));
+    
+    // Copy headers but remove Content-Type because MultipartRequest handles it
+    final headers = Map<String, String>.from(_headers);
+    headers.remove('Content-Type');
+    request.headers.addAll(headers);
+    
+    request.files.add(await http.MultipartFile.fromPath('proof', proofFile.path));
+    
+    final streamedResponse = await request.send();
+    return streamedResponse.statusCode == 200;
+  }
+
+  static Future<bool> updateVisitStatus(dynamic visitId, String status) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agency-visits/$visitId/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<Map<String, dynamic>> changeUserPassword(
+      String currentPassword, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/change-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': newPassword,
+      }),
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> changeAgencyPassword(
+      String currentPassword, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/agency/change-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': newPassword,
+      }),
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 }

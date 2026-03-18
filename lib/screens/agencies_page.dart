@@ -29,6 +29,7 @@ class _AgenciesPageState extends State<AgenciesPage> {
     final contactController = TextEditingController();
     final phoneController = TextEditingController();
     final emailController = TextEditingController();
+    final passwordController = TextEditingController();
 
     showDialog(
       context: context,
@@ -42,6 +43,7 @@ class _AgenciesPageState extends State<AgenciesPage> {
               TextField(controller: contactController, decoration: const InputDecoration(labelText: 'Personne de contact')),
               TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Téléphone')),
               TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
+              TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Mot de passe'), obscureText: true),
             ],
           ),
         ),
@@ -55,6 +57,7 @@ class _AgenciesPageState extends State<AgenciesPage> {
                   'contact_person': contactController.text,
                   'phone': phoneController.text,
                   'email': emailController.text,
+                  'password': passwordController.text,
                 });
                 if (success && mounted) {
                   Navigator.pop(context);

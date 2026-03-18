@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'app_drawer.dart';
 import 'main_navigation.dart';
+import 'login_page.dart';
 
 class CouponsPage extends StatefulWidget {
   const CouponsPage({super.key});
@@ -41,6 +42,14 @@ class _CouponsPageState extends State<CouponsPage> {
   }
 
   Future<void> _pickAndUploadImage() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter pour acquérir un coupon')),
+      );
+      return;
+    }
+
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -82,24 +91,35 @@ class _CouponsPageState extends State<CouponsPage> {
 
       setState(() => _isUploading = true);
       
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await ApiService.requestCoupon(
-        int.parse(authProvider.user!.id),
-        File(pickedFile.path),
-        amount,
-      );
-
-      setState(() => _isUploading = false);
-
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Demande envoyée avec succès !')),
+      try {
+        final success = await ApiService.requestCoupon(
+          int.parse(authProvider.user!.id),
+          File(pickedFile.path),
+          amount,
         );
-        _loadCoupons();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Échec de l\'envoi de la demande.')),
-        );
+// ... existing code in the try block
+
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Demande envoyée avec succès !')),
+          );
+          _loadCoupons();
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Échec de l\'envoi de la demande.')),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error uploading coupon: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de l\'envoi : ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isUploading = false);
+        }
       }
     }
   }
@@ -119,39 +139,47 @@ class _CouponsPageState extends State<CouponsPage> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          _buildRequestsSection(),
-          Expanded(
-            child: FutureBuilder<List<Coupon>>(
-              future: _couponsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: Consumer<AuthProvider>(
+        builder: (context, auth, child) {
+          if (!auth.isAuthenticated) {
+            return _buildLoginRequiredState();
+          }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Erreur: ${snapshot.error}'));
-                }
+          return Column(
+            children: [
+              _buildRequestsSection(),
+              Expanded(
+                child: FutureBuilder<List<Coupon>>(
+                  future: _couponsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                final coupons = snapshot.data ?? [];
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Erreur: ${snapshot.error}'));
+                    }
 
-                if (coupons.isEmpty) {
-                  return _buildEmptyState();
-                }
+                    final coupons = snapshot.data ?? [];
 
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: coupons.length,
-                  itemBuilder: (context, index) {
-                    final coupon = coupons[index];
-                    return _buildCouponCard(coupon);
+                    if (coupons.isEmpty) {
+                      return _buildEmptyState();
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: coupons.length,
+                      itemBuilder: (context, index) {
+                        final coupon = coupons[index];
+                        return _buildCouponCard(coupon);
+                      },
+                    );
                   },
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isUploading ? null : _pickAndUploadImage,
@@ -225,6 +253,38 @@ class _CouponsPageState extends State<CouponsPage> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500]),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginRequiredState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.lock_outline, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          const Text(
+            'Connexion requise',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Veuillez vous connecter pour voir vos coupons et en acquérir de nouveaux.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            ),
+            child: const Text('Se connecter', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

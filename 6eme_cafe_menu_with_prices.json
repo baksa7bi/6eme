@@ -1,0 +1,627 @@
+{
+  "restaurant": {
+    "name": "6ème Café Al Massira",
+    "opening_hours": {
+      "open": "7:00 AM",
+      "close": "1:00 AM"
+    }
+  },
+  "menu": {
+    "breakfast_formulas": [
+      {
+        "name": "KIDS",
+        "price": 38,
+        "currency": "DH",
+        "description": "Crêpe Nutella ou pancake, chocolat chaud, mini jus d'orange, Sidi Ali"
+      },
+      {
+        "name": "LE FASSI",
+        "price": 69,
+        "currency": "DH",
+        "description": "Tagine œuf au khlii, msamen khlii, pain grillé, baghrir au amlou, raib maison au fruits, jben, amlou, confiture, beurre, huile d'olive, olive noir, miel, soupe blanche, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, bouteille d'eau 33cl Sidi Ali"
+      },
+      {
+        "name": "PARISIEN",
+        "price": 49,
+        "currency": "DH",
+        "description": "3 minis viennoiseries, tranche de cake, soupe blanche, pain cake nutella, pain grillé, beurre, confiture, miel, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, eau Sidi Ali 33cl"
+      },
+      {
+        "name": "MARRAKCHI",
+        "price": 75,
+        "currency": "DH",
+        "description": "Omelette au choix, msemen, msemen au khli3, batboute farcis aux légumes, batboute au miel et beurre, pain grillé, jben, huile d'olive, confiture, miel, huile d'olive, beurre, olive noirs, amlou, soupe blanche, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, eau Sidi Ali 33cl"
+      },
+      {
+        "name": "CHAMALI",
+        "price": 75,
+        "currency": "DH",
+        "description": "Assiette charcuterie, fromage, tranches avocat, salade variée, jben au huile d'olive et zaatar, olive noir et vertes, tranche de cake, soupe blanche, thé chamali, pain cake pistache, huile d'olive, confiture, amlou, beurre, miel, pain grillé, salade de fruits, mini jus de carotte, mini jux détox, mini jus d'orange, bouteille d'eau 33cl"
+      },
+      {
+        "name": "HEALTHY",
+        "price": 79,
+        "currency": "DH",
+        "description": "Toast œuf au plat, toast guacamole d'avocat, pancake au miel et noix, yaourt au granula et fruits, salade de fruits, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, bouteille d'eau"
+      },
+      {
+        "name": "LE 6EME",
+        "price": 69,
+        "currency": "DH",
+        "description": "Omelette au choix, croissant sandwich (dinde fumée fromage), toast au Basilic tomate fromage, tranche de cake, pain cake pistache, yaourt maison au fruits, pain grillé, jben, huile d'olive, confiture, miel, huile d'olive, beurre, olive noirs, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, eau Sidi Ali 33cl"
+      },
+      {
+        "name": "LE TURC",
+        "price": 75,
+        "currency": "DH",
+        "description": "Œuf tomate et fines herbes, charcuterie, fromage rouge, concombre tomate cerise, mini salade maison, charcuterie, fromage rouge, saucisse, tranche de cake, fromage blanc au zaatar, miel, olive verte, olive noir, miel, confiture, huile d'olive, beurre, pain grillé, pain cake pistache, salade de fruits, boisson chaude au choix, mini jus de carotte, mini jux détox, mini jus d'orange, bouteille d'eau 33cl"
+      }
+    ],
+    "breakfast_a_la_carte": [
+      {"name": "Omelette Nature", "price": 25, "currency": "DH", "description": "Pain, Les Olives noires"},
+      {"name": "Omelette Fromage", "price": 35, "currency": "DH", "description": "Pain, Les Olives noires"},
+      {"name": "Œuf au plat", "price": 25, "currency": "DH", "description": "Pain, Les Olives noires"},
+      {"name": "Omelette Khlii", "price": 40, "currency": "DH", "description": "Pain"},
+      {"name": "Viennoiserie (1 pièce)", "price": 8, "currency": "DH", "description": ""},
+      {"name": "Msemen ou Beghrir ou Harcha (1 pièce)", "price": 6, "currency": "DH", "description": ""},
+      {"name": "Beurre (1 pièce)", "price": 3, "currency": "DH", "description": ""},
+      {"name": "Miel", "price": 3, "currency": "DH", "description": ""},
+      {"name": "Huile d'Olive", "price": 7, "currency": "DH", "description": ""},
+      {"name": "Confiture (1 pièce)", "price": 3, "currency": "DH", "description": ""},
+      {"name": "Amlou", "price": 7, "currency": "DH", "description": ""},
+      {"name": "Pain", "price": 3, "currency": "DH", "description": ""},
+      {"name": "Œuf dur", "price": 4, "currency": "DH", "description": ""},
+      {"name": "Les Olives noires", "price": 5, "currency": "DH", "description": ""},
+      {"name": "Les Olives verts", "price": 5, "currency": "DH", "description": ""},
+      {"name": "Frites", "price": 20, "currency": "DH", "description": ""}
+    ],
+    "starters": [
+      {
+        "name": "SALADE CESAR TERRE ET MER",
+        "price": 65,
+        "currency": "DH",
+        "description": "Poulet pané croustille, Crevette grises, Parmesan, Tomates Cerise, œuf, Croutons de pain, Salade Romaine, Sauce César"
+      },
+      {
+        "name": "SALADE TARTARE",
+        "price": 80,
+        "currency": "DH",
+        "description": "Avocat, Crevette grises, Persil, Coriandre, Citron, Sauce Cocktail"
+      },
+      {
+        "name": "SALADE CESAR AU POULET",
+        "price": 69,
+        "currency": "DH",
+        "description": "Salade romaine, poulet pané, Tomate cerise, pain de mie, les anchois, œuf"
+      },
+      {
+        "name": "SALADE MEDITERANEENE",
+        "price": 65,
+        "currency": "DH",
+        "description": "Courgettes, Aubergine, tomate cerise, Oignon, olive noir, salade rouge, fromage Feta, Concombre"
+      },
+      {
+        "name": "SELECTION DE SALADES FINES",
+        "price": 40,
+        "currency": "DH",
+        "description": "Taktouka, Zaalouk, Khizou mchermel, Aubergine"
+      },
+      {
+        "name": "SALADE EXOTIQUE",
+        "price": 80,
+        "currency": "DH",
+        "description": "Crevettes, ananas, Mangue, salade laitue, pomme, noix d'acajou, tomate cerise"
+      },
+      {
+        "name": "SALADE MAROCAINE",
+        "price": 35,
+        "currency": "DH",
+        "description": "Tomate, Oignon, Persil, Coriandre"
+      }
+    ],
+    "tajines": [
+      {
+        "name": "Tajine de Poulet aux Olives et Citron confit",
+        "price": {"1_personne": 70, "2_personnes": 130, "4_personnes": 220},
+        "currency": "DH",
+        "description": "Avec frites"
+      },
+      {
+        "name": "Pastilla Poulet",
+        "price": 70,
+        "currency": "DH",
+        "description": "La Traditionnelle Pastilla"
+      },
+      {
+        "name": "Pastilla Fruits de Mer",
+        "price": 80,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Tajine de Bœuf au Fruits sec et au Miel",
+        "price": {"1_personne": 95, "2_personnes": 180, "4_personnes": 280},
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Tajine de Bœuf aux pruneaux",
+        "price": {"1_personne": 95, "2_personnes": 180, "4_personnes": 280},
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "tangia": [
+      {
+        "name": "TANGIA AU JARET DE VEAU",
+        "price": {"250g": 90, "500g": 149, "1kg": 280},
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "saffa_rfissa": [
+      {
+        "name": "SAFFA MADFOUNA",
+        "price": {"1_personne": 80, "2_personnes": 140, "4_personnes": 230},
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "RFISSA",
+        "price": {"1_personne": 80, "2_personnes": 140, "4_personnes": 230},
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "couscous": [
+      {
+        "name": "Couscous Viande",
+        "price": {"1_personne": 70, "2_personnes": 149, "4_personnes": 279},
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Couscous Poulet",
+        "price": {"1_personne": 60, "2_personnes": 130, "4_personnes": 210},
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Couscous Végétarien",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "pasta": [
+      {
+        "name": "Carbonara",
+        "price": 75,
+        "currency": "DH",
+        "description": "Jambon de poulet, sauce blanche, Parmesan"
+      },
+      {
+        "name": "Norvégienne",
+        "price": 85,
+        "currency": "DH",
+        "description": "Sauce blanche, Saumon fumée, Gambas, Courgette, Parmesan"
+      },
+      {
+        "name": "Bolognaise",
+        "price": 65,
+        "currency": "DH",
+        "description": "Viande hachée, Sauce Tomate, Basilic Fruits, Parmesan, Tomate cerise"
+      },
+      {
+        "name": "Forestière",
+        "price": 65,
+        "currency": "DH",
+        "description": "Sauce blanche, Champignon, Poulet, Parmesan, Basilic Fruits"
+      },
+      {
+        "name": "Fruits de Mer",
+        "price": 80,
+        "currency": "DH",
+        "description": "Huile d'Olives, Sauce Tomate, Ail, Crevette, Calamar, Moules, Parmesan, Basilic Fruits"
+      },
+      {
+        "name": "Fromages",
+        "price": 70,
+        "currency": "DH",
+        "description": "Bleu, Cheddar, Parmesan, Mozzarella, Edam, Emmental, Sauce"
+      }
+    ],
+    "soups": [
+      {
+        "name": "Soupe de Poissons",
+        "price": 60,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "main_dishes": [
+      {
+        "name": "Entrecôte grillée",
+        "price": 130,
+        "currency": "DH",
+        "description": "Sauce aux choix (Poivres, Champignons, Roquefort)"
+      },
+      {
+        "name": "Emincé de Poulet",
+        "price": 75,
+        "currency": "DH",
+        "description": "Crème de Champignons"
+      },
+      {
+        "name": "Brochettes Merguez",
+        "price": 90,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Brochettes Viande Hachée",
+        "price": 95,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Brochettes Mixte",
+        "price": 95,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Brochettes Poulet",
+        "price": 75,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Gambas Pil-Pil",
+        "price": 70,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Escalope milanaise",
+        "price": 89,
+        "currency": "DH",
+        "description": "Garniture au choix: Pomme de terre – Pomme Purée – Légumes Sautés"
+      }
+    ],
+    "pizzas": [
+      {
+        "name": "Napolitain",
+        "price": 65,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "MARGHARITA",
+        "price": 65,
+        "currency": "DH",
+        "description": "Sauce Tomate, Mozzarella, Basilic frais, Origan, Huile d'Olive"
+      },
+      {
+        "name": "CESAR",
+        "price": 70,
+        "currency": "DH",
+        "description": "Sauce César, Mozzarella, Poulet, Copeaux de Parmesan, Tomates confites, Roquette"
+      },
+      {
+        "name": "VEGETARIENNE",
+        "price": 65,
+        "currency": "DH",
+        "description": "Sauce de chef, Mozzarella, Légumes grillés, Champignons, Tomates confites, Copeaux de Parmesan, Roquette"
+      },
+      {
+        "name": "PEPPERONI",
+        "price": 75,
+        "currency": "DH",
+        "description": "Sauce rose, Mozzarella, Pepperoni, Piment frais, Basilic"
+      },
+      {
+        "name": "FRUITS DE MER",
+        "price": 90,
+        "currency": "DH",
+        "description": "Sauce Americana, Mozzarella, Crevettes, Calamar, Moules, Tomates Confites, Copeaux de parmesan, roquette"
+      },
+      {
+        "name": "VIANDE HACHEE",
+        "price": 70,
+        "currency": "DH",
+        "description": "Sauce tomate, mozzarella, Viande hachée, poivron marinée, Copeaux de parmesan, roquette"
+      },
+      {
+        "name": "THON",
+        "price": 65,
+        "currency": "DH",
+        "description": "Sauce tomate, mozzarella, thon, Copeaux de parmesan, roquette"
+      },
+      {
+        "name": "PIZZA 4 SAISONS",
+        "price": 70,
+        "currency": "DH",
+        "description": "Poulet, viande hachée, fruits de mer"
+      },
+      {
+        "name": "PIZZA FROMAGES",
+        "price": 80,
+        "currency": "DH",
+        "description": "Cheddar, Parmesan, Mozzarella, Edam, Emmental"
+      }
+    ],
+    "burgers_sandwiches": [
+      {
+        "name": "AMERICAN HAMBURGER",
+        "price": 65,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CHICKEN BURGER",
+        "price": 60,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "SANDWICH POULET",
+        "price": 60,
+        "currency": "DH",
+        "description": "Sauce, Poulet oignon, tomate, Fromage"
+      },
+      {
+        "name": "SANDWICH VIANDE HACHEE",
+        "price": 60,
+        "currency": "DH",
+        "description": "Sauce, Viande Hachée, oignon Caramélisés, Fromage"
+      },
+      {
+        "name": "SANDWICH MERGUEZ",
+        "price": 70,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "SANDWICH MIXTE",
+        "price": 75,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "tacos": [
+      {
+        "name": "TACOS POULET",
+        "price": 69,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "TACOS VIANDE HACHEE",
+        "price": 80,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "TACOS NUGGETS",
+        "price": 70,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "TACOS MIXTE",
+        "price": 85,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "TACOS MEXICAIN",
+        "price": 65,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "kids_menu": [
+      {
+        "name": "Nuggets et frite et mini jus",
+        "price": 50,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "Cheese burger et frite et mini jus",
+        "price": 50,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "desserts": [
+      {
+        "name": "GATEAU DU JOUR",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "FONDANT AUX PISTACHES",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "TIRAMISSU",
+        "price": 40,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "FONDANT AU CHOCOLAT",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "SALADE DE FRUITS",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "sweet_crepes": [
+      {
+        "name": "CREPES NUTELLA",
+        "price": 40,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CREPES BANANE NUTELLA",
+        "price": 45,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CREPES CREME DE PISTACHE",
+        "price": 55,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CREPES AUX FRUITS ROUGES",
+        "price": 50,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "savory_crepes": [
+      {
+        "name": "CREPE AU FROMAGE",
+        "price": 60,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CREPE POULET CHAMPIGNONS",
+        "price": 65,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "CREPE AU FROMAGE ET SAUMON FUME",
+        "price": 75,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "waffles": [
+      {
+        "name": "GAUFRE NUTELLA",
+        "price": 40,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "GAUFRE FRUIT SEC + BOULE DE GLACE",
+        "price": 55,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "ice_cream": [
+      {
+        "name": "2 BOULES AU CHOIX",
+        "price": 50,
+        "currency": "DH",
+        "description": ""
+      },
+      {
+        "name": "3 BOULES AU CHOIX",
+        "price": 70,
+        "currency": "DH",
+        "description": ""
+      }
+    ],
+    "hot_drinks": [
+      {"name": "Thé Marocain", "price": 20, "currency": "DH", "description": ""},
+      {"name": "Thé Marocain Verveine", "price": 25, "currency": "DH", "description": ""},
+      {"name": "Espresso", "price": 20, "currency": "DH", "description": ""},
+      {"name": "Café américain", "price": 24, "currency": "DH", "description": ""},
+      {"name": "Café au lait", "price": 25, "currency": "DH", "description": ""},
+      {"name": "Café séparée", "price": 28, "currency": "DH", "description": ""},
+      {"name": "Cappuccino", "price": 28, "currency": "DH", "description": ""},
+      {"name": "Capsule Nespresso", "price": 25, "currency": "DH", "description": ""},
+      {"name": "Chocolat chaud", "price": 30, "currency": "DH", "description": ""},
+      {"name": "Lait chaud/froid", "price": 20, "currency": "DH", "description": ""},
+      {"name": "Verveine au lait", "price": 20, "currency": "DH", "description": ""},
+      {"name": "Flat white", "price": 24, "currency": "DH", "description": ""},
+      {"name": "Nes Nes", "price": 20, "currency": "DH", "description": ""},
+      {"name": "Spécial 6ème", "price": 30, "currency": "DH", "description": ""},
+      {"name": "Latte à la pistache", "price": 30, "currency": "DH", "description": ""},
+      {"name": "Signature 6ème", "price": 30, "currency": "DH", "description": ""}
+    ],
+    "mojitos": [
+      {"name": "Mojito Fruits", "price": 42, "currency": "DH", "description": ""},
+      {"name": "Mojito Passion", "price": 42, "currency": "DH", "description": ""},
+      {"name": "Mojito Fraise", "price": 42, "currency": "DH", "description": ""},
+      {"name": "Mojito Classic", "price": 42, "currency": "DH", "description": ""},
+      {"name": "Pina Colada", "price": 40, "currency": "DH", "description": ""}
+    ],
+    "fresh_juices": [
+      {"name": "Jus Fraise", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Jus Orange", "price": 40, "currency": "DH", "description": ""},
+      {"name": "Jus Mangue", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Jus Banane", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Jus Avocat", "price": 55, "currency": "DH", "description": ""},
+      {"name": "Jus Pomme", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Jus Citron", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Jus Carotte", "price": 55, "currency": "DH", "description": ""},
+      {"name": "Jus Ananas", "price": 45, "currency": "DH", "description": ""}
+    ],
+    "cocktails": [
+      {
+        "name": "Signature 6ème",
+        "price": 65,
+        "currency": "DH",
+        "description": "Ananas, Banane, Pêche, Gingembre"
+      },
+      {
+        "name": "Hawaïenne",
+        "price": 50,
+        "currency": "DH",
+        "description": "Ananas, Banane, Pêche"
+      },
+      {
+        "name": "Tropical",
+        "price": 50,
+        "currency": "DH",
+        "description": "Mangue, Ananas, Banane"
+      },
+      {
+        "name": "Énergétique",
+        "price": 65,
+        "currency": "DH",
+        "description": "Avocat, Fruits secs, Dattes"
+      }
+    ],
+    "cold_drinks": [
+      {"name": "Frappuccino Caramel", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Frappuccino Vanilla", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Frappuccino Chocolat", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Frappuccino Café", "price": 55, "currency": "DH", "description": ""},
+      {"name": "Cold coffee", "price": 45, "currency": "DH", "description": ""},
+      {"name": "Ice Spécial 6ème", "price": 35, "currency": "DH", "description": ""},
+      {"name": "Ice Latte", "price": 40, "currency": "DH", "description": ""},
+      {"name": "Ice pistachio latte", "price": 35, "currency": "DH", "description": ""},
+      {"name": "Ice safran latte", "price": 40, "currency": "DH", "description": ""},
+      {"name": "Ice signature 6ème", "price": 35, "currency": "DH", "description": ""}
+    ],
+    "other_drinks": [
+      {"name": "Soda", "price": 30, "currency": "DH", "description": ""},
+      {"name": "Orangina", "price": 35, "currency": "DH", "description": ""},
+      {"name": "Oulmes", "price": 30, "currency": "DH", "description": ""},
+      {"name": "Red Bull", "price": 40, "currency": "DH", "description": ""},
+      {"name": "Eau 1.5l", "price": 25, "currency": "DH", "description": ""},
+      {"name": "Eau 0.5l", "price": 20, "currency": "DH", "description": ""}
+    ]
+  }
+}
