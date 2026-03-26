@@ -135,10 +135,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       // Combined Notifications & Theme Toggle
-                      IconButton(
-                        icon: const Icon(Icons.brightness_6, color: Colors.white),
-                        onPressed: () => context.read<ThemeProvider>().toggleTheme(),
-                      ),
+                     
                       const SizedBox(width: 4),
                       Consumer<NotificationProvider>(
                         builder: (context, notifProvider, child) {
