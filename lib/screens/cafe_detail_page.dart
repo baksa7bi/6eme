@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/cafe.dart';
@@ -6,9 +7,11 @@ import '../providers/cart_provider.dart';
 import '../providers/favorite_provider.dart';
 import '../services/api_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
 import 'login_page.dart';
 import 'reservation_page.dart';
+import 'package:store_app/l10n/app_localizations.dart';
 
 class CafeDetailPage extends StatefulWidget {
   final Cafe cafe;
@@ -20,7 +23,7 @@ class CafeDetailPage extends StatefulWidget {
 }
 
 class _CafeDetailPageState extends State<CafeDetailPage> {
-  String _selectedCategory = 'Tous';
+  String? _selectedCategory;
   List<MenuItem> _menuItems = [];
   bool _isLoading = true;
 
@@ -40,21 +43,25 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors du chargement du menu: $e')),
+          SnackBar(content: Text('${l10n.error}: $e')),
         );
       }
     }
   }
 
   List<String> get _categories {
+    final l10n = AppLocalizations.of(context)!;
     final cats = _menuItems.map((item) => item.category).toSet().toList();
-    return ['Tous', ...cats];
+    return [l10n.all, ...cats];
   }
 
   List<MenuItem> get _filteredItems {
-    if (_selectedCategory == 'Tous') return _menuItems;
-    return _menuItems.where((item) => item.category == _selectedCategory).toList();
+    final l10n = AppLocalizations.of(context)!;
+    final category = _selectedCategory ?? l10n.all;
+    if (category == l10n.all) return _menuItems;
+    return _menuItems.where((item) => item.category == category).toList();
   }
 
   @override
@@ -137,7 +144,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                         );
                       },
                       icon: const Icon(Icons.event_seat),
-                      label: const Text('Réserver une table'),
+                      label: Text(AppLocalizations.of(context)!.reserveTable),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: Theme.of(context).primaryColor,
@@ -147,9 +154,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   ),
                   
                   const SizedBox(height: 24),
-                  const Text(
-                    'Menu',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.menu,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -167,7 +174,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                 itemCount: _categories.length,
                 itemBuilder: (context, index) {
                   final category = _categories[index];
-                  final isSelected = category == _selectedCategory;
+                  final l10n = AppLocalizations.of(context)!;
+                  final currentSelected = _selectedCategory ?? l10n.all;
+                  final isSelected = category == currentSelected;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
@@ -193,7 +202,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             sliver: _isLoading 
               ? const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()))
               : _filteredItems.isEmpty
-                ? const SliverToBoxAdapter(child: Center(child: Text('Aucun article trouvé.')))
+                ? SliverToBoxAdapter(child: Center(child: Text(AppLocalizations.of(context)!.noItemsFound)))
                 : SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -209,95 +218,175 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 
   Widget _buildMenuItem(MenuItem item) {
+    final auth = context.read<AuthProvider>();
+    final l10n = AppLocalizations.of(context)!;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: item.imageUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: ApiService.getFullImageUrl(item.imageUrl),
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  httpHeaders: const {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                  },
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => Container(
+      child: InkWell(
+        onTap: () {
+          context.read<CartProvider>().addItem(item);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${item.name} ${l10n.addedToCart}'),
+              duration: const Duration(seconds: 1),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        child: ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: item.imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: ApiService.getFullImageUrl(item.imageUrl),
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    httpHeaders: const {
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    },
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.restaurant, color: Colors.grey),
+                    ),
+                  )
+                : Container(
                     width: 60,
                     height: 60,
                     color: Colors.grey[200],
                     child: const Icon(Icons.restaurant, color: Colors.grey),
                   ),
-                )
-              : Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.restaurant, color: Colors.grey),
+          ),
+          title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(item.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 4),
+              Text(
+                '${item.price.toStringAsFixed(0)} DH',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (auth.user?.isAdmin == true || auth.user?.isContentManager == true || (auth.user?.isManager == true && auth.user?.cafeId.toString() == widget.cafe.id.toString()))
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () => _editMenuItem(item),
+                ),
+              Consumer<FavoriteProvider>(
+                builder: (context, favoriteProvider, _) {
+                  final isFavorite = favoriteProvider.isFavorite(item.id);
+                  return IconButton(
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : null,
+                    ),
+                    onPressed: () {
+                      if (auth.isAuthenticated) {
+                        favoriteProvider.toggleFavorite(item);
+                      } else {
+                        auth.setPendingFavorite(item);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(content: Text(l10n.login)),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+          isThreeLine: true,
         ),
-        title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 4),
-            Text(
-              '${item.price.toStringAsFixed(0)} DH',
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  void _editMenuItem(MenuItem item) {
+    final nameController = TextEditingController(text: item.name);
+    final descController = TextEditingController(text: item.description);
+    final priceController = TextEditingController(text: item.price.toString());
+    final categoryController = TextEditingController(text: item.category);
+    File? pickedImage;
+    bool isSaving = false;
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(l10n.modifyProduct),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nom')),
+                  TextField(controller: descController, decoration: const InputDecoration(labelText: 'Description')),
+                  TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Prix (DH)'), keyboardType: TextInputType.number),
+                  TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Catégorie')),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () async {
+                      final picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                      if (image != null) {
+                        setDialogState(() => pickedImage = File(image.path));
+                      }
+                    },
+                    child: Container(
+                      height: 100,
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: pickedImage != null 
+                        ? Image.file(pickedImage!, fit: BoxFit.cover) 
+                        : const Icon(Icons.add_a_photo),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Consumer<FavoriteProvider>(
-              builder: (context, favoriteProvider, _) {
-                final isFavorite = favoriteProvider.isFavorite(item.id);
-                return IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
-                  onPressed: () {
-                    final auth = context.read<AuthProvider>();
-                    if (auth.isAuthenticated) {
-                      favoriteProvider.toggleFavorite(item);
-                    } else {
-                      auth.setPendingFavorite(item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Veuillez vous connecter pour ajouter des favoris')),
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
-                      );
-                    }
-                  },
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.add_shopping_cart),
-              onPressed: () {
-                context.read<CartProvider>().addItem(item);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${item.name} ajouté au panier'),
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        isThreeLine: true,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+              ElevatedButton(
+                onPressed: isSaving ? null : () async {
+                  setDialogState(() => isSaving = true);
+                  final success = await ApiService.updateMenuItem(
+                    item.id,
+                    name: nameController.text,
+                    description: descController.text,
+                    price: double.tryParse(priceController.text),
+                    category: categoryController.text,
+                    imageFile: pickedImage,
+                    userId: context.read<AuthProvider>().user?.id.toString(),
+                  );
+                  if (success) {
+                    _fetchMenuItems();
+                    Navigator.pop(context);
+                  } else {
+                    setDialogState(() => isSaving = false);
+                  }
+                },
+                child: isSaving ? const CircularProgressIndicator() : Text(l10n.save),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

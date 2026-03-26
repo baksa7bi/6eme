@@ -189,7 +189,10 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Image Picker Section
                     GestureDetector(
                       onTap: () async {
-                        final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                        final pickedFile = await _picker.pickImage(
+                          source: ImageSource.gallery,
+                          imageQuality: 70,
+                        );
                         if (pickedFile != null) {
                           setState(() {
                             _imageFile = File(pickedFile.path);

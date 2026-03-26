@@ -5,8 +5,27 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'reservation_page.dart';
 
-class EventsPage extends StatelessWidget {
+class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
+
+  @override
+  State<EventsPage> createState() => _EventsPageState();
+}
+
+class _EventsPageState extends State<EventsPage> {
+  late Future<List<Event>> _eventsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  void _loadEvents() {
+    setState(() {
+      _eventsFuture = ApiService.getEvents();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +34,16 @@ class EventsPage extends StatelessWidget {
         title: const Text('Événements à Venir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadEvents,
+            tooltip: 'Actualiser',
+          ),
+        ],
       ),
       body: FutureBuilder<List<Event>>(
-        future: ApiService.getEvents(),
+        future: _eventsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -30,29 +56,34 @@ class EventsPage extends StatelessWidget {
             return const Center(child: Text('Aucun événement prévu pour le moment.'));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: events.length,
-            itemBuilder: (context, index) {
-              final event = events[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF131B2D), // Deep dark blue background
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    )
-                  ],
-                ),
-                child: IntrinsicHeight(
+          return RefreshIndicator(
+            onRefresh: () async {
+              _loadEvents();
+              await _eventsFuture;
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: events.length,
+              itemBuilder: (context, index) {
+                final event = events[index];
+                return Container(
+                  height: 180, // Fixed height for all cards
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131B2D), // Deep dark blue background
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      )
+                    ],
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Image Part
+                      // Image Part - Takes flex 4
                       Expanded(
                         flex: 4,
                         child: ClipRRect(
@@ -77,7 +108,7 @@ class EventsPage extends StatelessWidget {
                               ),
                         ),
                       ),
-                      // Text Part with yellow border
+                      // Text Part with yellow border - Takes flex 6
                       Expanded(
                         flex: 6,
                         child: Container(
@@ -91,56 +122,58 @@ class EventsPage extends StatelessWidget {
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     'LE ${DateFormat('dd MMMM', 'fr_FR').format(event.date).toUpperCase()}',
                                     style: const TextStyle(
-                                      color: Color(0xFFFFB606), // Yellow accent
+                                      color: Color(0xFFFFB606),
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 2),
                                   Text(
                                     'À ${event.location.toUpperCase()}',
                                     style: const TextStyle(
                                       color: Color(0xFFFFB606),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 10,
                                       letterSpacing: 0.5,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   Text(
                                     event.title,
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       height: 1.1,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    event.description,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w400,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 32), // Space for absolute positioned button
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    event.description,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 10,
+                                      height: 1.3,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
-                              // Button at bottom right
+                              // Reservation Button at absolute bottom right
                               Positioned(
                                 bottom: 0,
                                 right: 0,
-                                child: InkWell(
+                                child: GestureDetector(
                                   onTap: () {
                                     if (event.cafe != null) {
                                       Navigator.push(
@@ -151,7 +184,7 @@ class EventsPage extends StatelessWidget {
                                       );
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Impossible de vérifier avec le café pour le moment.')),
+                                        const SnackBar(content: Text('Impossible de réserver pour le moment.')),
                                       );
                                     }
                                   },
@@ -178,9 +211,9 @@ class EventsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

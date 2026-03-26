@@ -14,7 +14,7 @@ class ApiService {
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
   // static const String baseUrl = 'https://api.sfw-digital.com/api'; 
-  static const String baseUrl = 'http://192.168.100.183:8000/api'; 
+  static const String baseUrl = 'http://192.168.100.40:8000/api'; 
   static String get storageUrl {
     if (baseUrl.endsWith('/api')) {
       return baseUrl.substring(0, baseUrl.length - 4) + '/storage';
@@ -51,6 +51,29 @@ class ApiService {
       headers: _headers,
       body: jsonEncode({'email': email, 'password': password}),
     );
+    return jsonDecode(response.body);
+  }
+
+  static String get _headersJson => jsonEncode(_headers);
+
+  static Future<Map<String, dynamic>> socialLogin(String provider, String token, {String? email, String? name}) async {
+    print('ApiService: socialLogin connecting to $baseUrl/social-login');
+    print('ApiService: provider=$provider, email=$email');
+    
+    final response = await http.post(
+      Uri.parse('$baseUrl/social-login'),
+      headers: _headers,
+      body: jsonEncode({
+        'provider': provider,
+        'token': token,
+        'email': email,
+        'name': name,
+      }),
+    );
+
+    print('ApiService: response status=${response.statusCode}');
+    print('ApiService: response body=${response.body}');
+
     return jsonDecode(response.body);
   }
 
@@ -258,23 +281,21 @@ class ApiService {
     ];
   }
 
-  static Future<bool> updateSliderItem(int id, String title, String subtitle, {File? imageFile}) async {
+  static Future<bool> updateSliderItem(int id, String title, String subtitle, {File? imageFile, bool showText = true}) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/sliders/update'));
-    request.headers.addAll({
-      'Authorization': 'Bearer $_token',
-      'Accept': 'application/json',
-    });
+    request.headers.addAll(_headers);
 
     request.fields['id'] = id.toString();
     request.fields['title'] = title;
     request.fields['subtitle'] = subtitle;
+    request.fields['show_text'] = showText.toString();
 
     if (imageFile != null) {
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
     }
 
-    final response = await request.send();
-    return response.statusCode == 200;
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+    return streamedResponse.statusCode == 200;
   }
 
 
@@ -354,7 +375,28 @@ class ApiService {
     return response.statusCode == 201;
   }
 
-  static Future<bool> addEvent(Event event, {File? imageFile, required String userId, String? cafeId}) async {
+  static Future<bool> updateMenuItem(String id, {String? name, String? description, double? price, String? category, File? imageFile, String? userId}) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/menu-items/$id'));
+    request.headers.addAll({
+      if (_token != null) 'Authorization': 'Bearer $_token',
+      'Accept': 'application/json',
+    });
+
+    if (name != null) request.fields['name'] = name;
+    if (description != null) request.fields['description'] = description;
+    if (price != null) request.fields['price'] = price.toString();
+    if (category != null) request.fields['category'] = category;
+    if (userId != null) request.fields['user_id'] = userId;
+
+    if (imageFile != null) {
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+    }
+
+    final response = await request.send();
+    return response.statusCode == 200;
+  }
+
+  static Future<Map<String, dynamic>> addEvent(Event event, {File? imageFile, required String userId, String? cafeId}) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/events'));
     request.headers.addAll({
       'Authorization': 'Bearer $_token',
@@ -382,8 +424,19 @@ class ApiService {
       request.fields['image_url'] = event.imageUrl;
     }
 
-    final response = await request.send();
-    return response.statusCode == 201;
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 201) {
+      return {'success': true, 'message': 'Évènement ajouté avec succès'};
+    } else {
+      try {
+        final data = jsonDecode(response.body);
+        return {'success': false, 'message': data['message'] ?? "Erreur lors de l'ajout (Code ${response.statusCode})"};
+      } catch (_) {
+        return {'success': false, 'message': "Erreur serveur (${response.statusCode})"};
+      }
+    }
   }
 
   static Future<bool> requestCoupon(int userId, File imageFile, double amount) async {
@@ -557,5 +610,17 @@ class ApiService {
       }),
     );
     return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> claimFirstTryCoupon(String userId, String deviceId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupons/claim-first-try'),
+      headers: _headers,
+      body: jsonEncode({
+        'user_id': userId,
+        'device_id': deviceId,
+      }),
+    );
+    return jsonDecode(response.body);
   }
 }

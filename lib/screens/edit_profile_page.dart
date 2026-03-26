@@ -15,7 +15,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
-  final _passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +32,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -47,7 +45,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _emailController.text.trim(),
       _phoneController.text.trim(),
       address: _addressController.text.trim(),
-      password: _passwordController.text.trim(),
     );
 
     if (mounted) {
@@ -116,27 +113,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.location_on),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Modifier le mot de passe (optionnel)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Nouveau mot de passe',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty && value.length < 8) {
-                    return 'Minimum 8 caractères';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 32),
               ElevatedButton(

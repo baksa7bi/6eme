@@ -24,6 +24,8 @@ import 'agency_login_page.dart';
 import 'agency_dashboard_page.dart';
 import 'admin_agency_visits_page.dart';
 import '../providers/agency_provider.dart';
+import '../providers/locale_provider.dart';
+import 'package:store_app/l10n/app_localizations.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -32,7 +34,9 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final agencyProvider = Provider.of<AgencyProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Drawer(
       child: Column(
@@ -48,7 +52,6 @@ class AppDrawer extends StatelessWidget {
             ),
             color: theme.primaryColor,
             child: auth.isAuthenticated
-              // ── Regular user logged in ──────────────────────────────────
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,7 +72,6 @@ class AppDrawer extends StatelessWidget {
                   ],
                 )
               : agencyProvider.isAgencyAuthenticated
-              // ── Agency logged in ────────────────────────────────────────
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -98,12 +100,11 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ],
                 )
-              // ── Nobody logged in ────────────────────────────────────────
               : Column(
                   children: [
                     const Icon(Icons.account_circle, size: 60, color: Colors.white),
                     const SizedBox(height: 10),
-                    const Text('Bienvenue !', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(l10n.welcome, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -115,7 +116,7 @@ class AppDrawer extends StatelessWidget {
                         foregroundColor: theme.primaryColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
-                      child: const Text('Se connecter'),
+                      child: Text(l10n.login),
                     ),
                   ],
                 ),
@@ -126,94 +127,85 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
-                _buildMenuItem(context, Icons.home, 'Accueil', () {
-                  Navigator.pop(context); // Close drawer, already on home or main nav
-                  // Ideally navigate to tab 0 if using a global key for MainNavigation, but for now just closing is fine
+                _buildMenuItem(context, Icons.home, l10n.home, () {
+                  Navigator.pop(context);
                 }),
-                if (auth.isAuthenticated)
-                  _buildMenuItem(context, Icons.favorite_border, 'Mes favoris', () {
+                if (auth.isAuthenticated) ...[
+                  _buildMenuItem(context, Icons.favorite_border, l10n.favorites, () {
                     Navigator.pop(context);
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
                   }),
-                _buildMenuItem(context, Icons.inventory_2_outlined, 'Mes Commandes', () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
-                }),
-                _buildMenuItem(context, Icons.event_note_outlined, 'Mes Réservations', () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
-                }),
-                if (!(auth.user?.isManager ?? false) && !(auth.user?.isAdmin ?? false))
-                  _buildMenuItem(context, Icons.confirmation_num_outlined, 'Mes Coupons', () {
+                  _buildMenuItem(context, Icons.confirmation_num_outlined, l10n.myCoupons, () {
                     Navigator.pop(context);
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const CouponsPage()));
                   }),
-                
-                const Divider(),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text('AGENCE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
-                ),
-                if (agencyProvider.isAgencyAuthenticated)
-                  _buildMenuItem(context, Icons.dashboard, 'Dashboard Agence', () {
+                  _buildMenuItem(context, Icons.inventory_2_outlined, l10n.myOrders, () {
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AgencyDashboardPage()));
-                  })
-                else
-                  _buildMenuItem(context, Icons.business, 'Espace Agence', () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AgencyLoginPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
                   }),
+                  _buildMenuItem(context, Icons.event_note_outlined, l10n.myReservations, () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
+                  }),
+                ],
+                
+                _buildMenuItem(context, Icons.cake_outlined, l10n.anniversary, () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AnniversaryPage()));
+                }),
+                _buildMenuItem(context, Icons.event, l10n.events, () {
+                  // If there is an events list page, push it here
+                  // For now, let's just keep the events icon for consistency
+                }),
                 
                 const Divider(),
-                
-                _buildMenuItem(context, Icons.settings_outlined, 'Paramètres', () {
+                _buildMenuItem(context, Icons.settings_outlined, l10n.settings, () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
                 }),
-                _buildMenuItem(context, Icons.brightness_6, 'Thème Sombre/Clair', () {
-                   Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                _buildMenuItem(context, Icons.brightness_6, l10n.themeToggle, () {
+                   context.read<ThemeProvider>().toggleTheme();
                 }),
-                _buildMenuItem(context, Icons.help_outline, 'Aide & Support', () {}),
+                _buildMenuItem(context, Icons.help_outline, l10n.helpSupport, () {}),
 
                 if (auth.isAuthenticated) ...[
                   if ((auth.user?.isContentManager ?? false) || (auth.user?.isManager ?? false)) ...[
                     const Divider(),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text('GESTION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(l10n.management, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
                     ),
-                    _buildMenuItem(context, Icons.add_box_outlined, 'Ajouter un Produit', () {
+                    _buildMenuItem(context, Icons.add_box_outlined, l10n.addProduct, () {
                       Navigator.pop(context);
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AddProductPage()));
                     }),
-                    _buildMenuItem(context, Icons.event, 'Ajouter un Évènement', () {
+                    _buildMenuItem(context, Icons.event, l10n.addEvent, () {
                       Navigator.pop(context);
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
                     }),
                     if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
-                      _buildMenuItem(context, Icons.confirmation_number, 'Coupons Actifs', () {
+                      _buildMenuItem(context, Icons.confirmation_number, l10n.activeCoupons, () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagerCouponsPage()));
                       }),
                     if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
-                      _buildMenuItem(context, Icons.receipt_long, 'Visites & Commissions', () {
+                      _buildMenuItem(context, Icons.receipt_long, l10n.visitsCommissions, () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminAgencyVisitsPage()));
                       }),
                     if (auth.user?.isAdmin ?? false) ...[
-                      _buildMenuItem(context, Icons.business, 'Gestion Agences', () {
+                      _buildMenuItem(context, Icons.business, l10n.manageAgencies, () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const AgenciesPage()));
                       }),
-                      _buildMenuItem(context, Icons.person_add, 'Ajouter un Manager', () {
+                      _buildMenuItem(context, Icons.person_add, l10n.addManager, () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const AddManagerPage()));
                       }),
                     ],
                   ],
                   const Divider(),
-                  _buildMenuItem(context, Icons.logout, 'Se déconnecter', () {
+                  _buildMenuItem(context, Icons.logout, l10n.logout, () {
                     auth.logout();
                     context.read<FavoriteProvider>().clearFavorites();
                     Navigator.pop(context);
@@ -223,7 +215,7 @@ class AppDrawer extends StatelessWidget {
                 // ── Agency logout (shown only when agency is logged in) ───
                 if (agencyProvider.isAgencyAuthenticated) ...[
                   const Divider(),
-                  _buildMenuItem(context, Icons.logout, 'Déconnecter l\'agence', () {
+                  _buildMenuItem(context, Icons.logout, l10n.logoutAgency, () {
                     agencyProvider.logout();
                     Navigator.pop(context);
                   }, color: Colors.red),
@@ -232,29 +224,60 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           
-          // Footer
+          
+          // Bottom section with Instagram in Middle and Language Dropdown on Right
+          const Divider(),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Version 1.0.0', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                // Left filler to help center the middle item
+                const Expanded(child: SizedBox()),
+                
+                // Instagram icon in the middle
+                IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.pink, size: 28),
+                  onPressed: () async {
+                    final Uri url = Uri.parse('https://www.instagram.com/6eme.cafe/');
+                    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.instagramError)),
+                      );
+                    }
+                  },
+                ),
+                
+                // Language switcher dropdown on the right
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: localeProvider.locale.languageCode,
+                          icon: const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.grey),
+                          style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 12),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              localeProvider.setLocale(Locale(newValue));
+                            }
+                          },
+                          items: const [
+                            DropdownMenuItem(value: 'fr', child: Text('FR')),
+                            DropdownMenuItem(value: 'en', child: Text('EN')),
+                            DropdownMenuItem(value: 'ar', child: Text('AR')),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            ),
-          ),
-          // Instagram Icon
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: IconButton(
-              icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.pink, size: 30),
-              onPressed: () async {
-                final Uri url = Uri.parse('https://www.instagram.com/6eme.cafe/');
-                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Impossible d\'ouvrir Instagram')),
-                  );
-                }
-              },
             ),
           ),
         ],

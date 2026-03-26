@@ -4,6 +4,8 @@ import '../providers/auth_provider.dart';
 import '../providers/agency_provider.dart';
 import '../providers/favorite_provider.dart';
 import 'register_page.dart';
+import 'package:store_app/l10n/app_localizations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,13 +21,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Se connecter')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.login)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
             const Icon(Icons.lock_person, size: 80, color: Colors.blue),
             const SizedBox(height: 30),
             TextField(
@@ -62,22 +64,19 @@ class _LoginPageState extends State<LoginPage> {
                               agencyProvider: context.read<AgencyProvider>(),
                             );
                             if (success && mounted) {
-                              // Refresh favorites for the logged in user
                               context.read<FavoriteProvider>().loadFavoritesFromApi();
-                              
-                              // Handle pending favorite
                               if (auth.pendingFavorite != null) {
                                 context.read<FavoriteProvider>().toggleFavorite(auth.pendingFavorite!);
-                                auth.setPendingFavorite(null); // Clear it
+                                auth.setPendingFavorite(null);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Article ajouté aux favoris !')),
+                                  const SnackBar(content: Text('Succès !')),
                                 );
                               }
                               Navigator.pop(context); 
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('L\'email ou le mot de passe est incorrect.'),
+                                  content: Text('Erreur d\'authentification'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -85,12 +84,48 @@ class _LoginPageState extends State<LoginPage> {
                           },
                     child: auth.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Se connecter'),
+                        : Text(AppLocalizations.of(context)!.login),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            const Row(
+              children: [
+                Expanded(child: Divider()),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text("OU"),
+                ),
+                Expanded(child: Divider()),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Social Login Buttons
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     _SocialButton(
+            //       icon: FontAwesomeIcons.google,
+            //       color: Colors.red,
+            //       onPressed: () => context.read<AuthProvider>().signInWithGoogle(
+            //         agencyProvider: context.read<AgencyProvider>()
+            //       ).then((success) {
+            //         if (success && mounted) Navigator.pop(context);
+            //       }),
+            //     ),
+            //     _SocialButton(
+            //       icon: FontAwesomeIcons.facebookF,
+            //       color: Colors.blue[900]!,
+            //       onPressed: () => context.read<AuthProvider>().signInWithFacebook(
+            //         agencyProvider: context.read<AgencyProvider>()
+            //       ).then((success) {
+            //         if (success && mounted) Navigator.pop(context);
+            //       }),
+            //     ),
+            //   ],
+            // ),
+            const SizedBox(height: 24),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -102,6 +137,29 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+
+  const _SocialButton({required this.icon, required this.color, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: FaIcon(icon, color: color, size: 28),
       ),
     );
   }

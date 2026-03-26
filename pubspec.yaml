@@ -9,11 +9,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
   webview_flutter: ^4.7.0
   provider: ^6.1.1
   google_fonts: ^6.1.0
   font_awesome_flutter: ^10.7.0
-  intl: ^0.19.0
   http: ^1.2.1
   video_player: ^2.8.2
   image_picker: ^1.0.7
@@ -21,6 +23,9 @@ dependencies:
   url_launcher: ^6.2.5
   shared_preferences: ^2.5.4
   connectivity_plus: ^7.0.0
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.1.0
+  device_info_plus: ^11.1.0
 
 dev_dependencies:
   flutter_test:
@@ -32,25 +37,28 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/icon.png"
   min_sdk_android: 21
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_foreground: "assets/images/icon.png"
   remove_alpha_ios: true
   bg_color_ios: "#000000"
 
 flutter_native_splash:
   color: "#000000"
-  image: "assets/images/logo.png"
+  image: "assets/images/icon.png"
+  android_gravity: "center"
+  ios_content_mode: "center"
   color_dark: "#000000"
-  image_dark: "assets/images/logo.png"
+  image_dark: "assets/images/icon.png"
   android_12:
     color: "#000000"
-    image: "assets/images/logo.png"
+    image: "assets/images/icon.png"
     color_dark: "#000000"
-    image_dark: "assets/images/logo.png"
+    image_dark: "assets/images/icon.png"
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/images/

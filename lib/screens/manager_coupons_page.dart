@@ -104,46 +104,7 @@ class _ManagerCouponsPageState extends State<ManagerCouponsPage> {
           ),
         ],
       ),
-      bottomNavigationBar: Consumer<CartProvider>(
-        builder: (context, cart, child) {
-          return BottomNavigationBar(
-            currentIndex: 0,
-            onTap: (index) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const MainNavigation()),
-                (route) => false,
-              );
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Theme.of(context).primaryColor,
-            unselectedItemColor: Colors.grey,
-            items: [
-              const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
-              const BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Cafés'),
-              const BottomNavigationBarItem(icon: Icon(Icons.cake_outlined), label: 'Anniversaire'),
-              const BottomNavigationBarItem(icon: Icon(Icons.event_outlined), label: 'Événements'),
-              BottomNavigationBarItem(
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.shopping_cart_outlined),
-                    if (cart.itemCount > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: CircleAvatar(
-                          radius: 8,
-                          backgroundColor: Colors.red,
-                          child: Text('${cart.itemCount}', style: const TextStyle(fontSize: 10, color: Colors.white)),
-                        ),
-                      )
-                  ],
-                ),
-                label: 'Panier',
-              ),
-            ],
-          );
-        },
-      ),
+    
     );
   }
 

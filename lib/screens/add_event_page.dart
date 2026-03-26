@@ -97,18 +97,21 @@ class _AddEventPageState extends State<AddEventPage> {
       cafe: _selectedCafe,
     );
 
-    final success = await ApiService.addEvent(newEvent, imageFile: _imageFile, userId: auth.user!.id, cafeId: _selectedCafeId);
+    final result = await ApiService.addEvent(newEvent, imageFile: _imageFile, userId: auth.user!.id, cafeId: _selectedCafeId);
 
     setState(() => _isSubmitting = false);
 
-    if (success && mounted) {
+    if (result['success'] == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Évènement ajouté avec succès !')),
       );
       Navigator.pop(context);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur lors de l'ajout.")),
+        SnackBar(
+          content: Text(result['message'] ?? "Erreur lors de l'ajout."),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -230,7 +233,10 @@ class _AddEventPageState extends State<AddEventPage> {
                     // Image Picker Section
                     GestureDetector(
                       onTap: () async {
-                        final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                        final pickedFile = await _picker.pickImage(
+                          source: ImageSource.gallery,
+                          imageQuality: 70, // This compresses the image to ~1-2MB typically
+                        );
                         if (pickedFile != null) {
                           setState(() {
                             _imageFile = File(pickedFile.path);

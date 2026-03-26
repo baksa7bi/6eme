@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'orders_page.dart';
 import 'cafe_detail_page.dart';
+import 'package:store_app/l10n/app_localizations.dart';
 
 class CafesPage extends StatelessWidget {
   final bool isSelectionMode;
@@ -15,9 +16,10 @@ class CafesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nos Cafés'),
+        title: Text(l10n.cafes),
         actions: [
           IconButton(
             icon: const Icon(Icons.map),
@@ -34,11 +36,11 @@ class CafesPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Erreur: ${snapshot.error}'));
+            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
           }
           final cafes = snapshot.data ?? [];
           if (cafes.isEmpty) {
-            return const Center(child: Text('Aucun café trouvé'));
+            return Center(child: Text(l10n.noCafesFound));
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -53,6 +55,7 @@ class CafesPage extends StatelessWidget {
   }
 
   Widget _buildCafeCard(BuildContext context, Cafe cafe) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 3,
@@ -179,7 +182,7 @@ class CafesPage extends StatelessWidget {
                           }
                         },
                         icon: Icon(isSelectionMode ? Icons.check_circle : Icons.restaurant_menu),
-                        label: Text(isSelectionMode ? 'Choisir ce café' : 'Voir le menu'),
+                        label: Text(isSelectionMode ? l10n.chooseThisCafe : l10n.seeMenu),
                       ),
                     ],
                   ),
@@ -193,13 +196,14 @@ class CafesPage extends StatelessWidget {
   }
 
   void _confirmLocalOrder(BuildContext context, Cafe cafe) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmer la commande'),
-        content: Text('Voulez-vous valider votre commande sur place à ${cafe.name} ?'),
+        title: Text(l10n.confirmOrder),
+        content: Text(l10n.confirmOrderBody(cafe.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               final cart = Provider.of<CartProvider>(context, listen: false);
@@ -222,8 +226,8 @@ class CafesPage extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Succès !'),
-                  content: const Text('Votre commande a été validée. Vous recevrez un reçu sous peu.'),
+                  title: Text(l10n.success),
+                  content: Text(l10n.orderValidated),
                   actions: [
                     ElevatedButton(
                       onPressed: () {
@@ -235,13 +239,13 @@ class CafesPage extends StatelessWidget {
                           (route) => route.isFirst,
                         );
                       }, 
-                      child: const Text('Voir mes commandes')
+                      child: Text(l10n.viewMyOrders)
                     ),
                   ],
                 ),
               );
             },
-            child: const Text('Confirmer'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),

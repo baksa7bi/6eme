@@ -29,7 +29,6 @@ class _AgenciesPageState extends State<AgenciesPage> {
     final contactController = TextEditingController();
     final phoneController = TextEditingController();
     final emailController = TextEditingController();
-    final passwordController = TextEditingController();
 
     showDialog(
       context: context,
@@ -43,7 +42,11 @@ class _AgenciesPageState extends State<AgenciesPage> {
               TextField(controller: contactController, decoration: const InputDecoration(labelText: 'Personne de contact')),
               TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Téléphone')),
               TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-              TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Mot de passe'), obscureText: true),
+              const SizedBox(height: 10),
+              const Text(
+                'Le mot de passe par défaut est : password',
+                style: TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic),
+              ),
             ],
           ),
         ),
@@ -57,7 +60,6 @@ class _AgenciesPageState extends State<AgenciesPage> {
                   'contact_person': contactController.text,
                   'phone': phoneController.text,
                   'email': emailController.text,
-                  'password': passwordController.text,
                 });
                 if (success && mounted) {
                   Navigator.pop(context);

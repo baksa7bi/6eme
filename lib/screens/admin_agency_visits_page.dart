@@ -168,7 +168,7 @@ class _AdminAgencyVisitsPageState extends State<AdminAgencyVisitsPage>
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
-      imageQuality: 80,
+      imageQuality: 70,
     );
 
     if (image != null && mounted) {
@@ -463,28 +463,89 @@ class _AdminAgencyVisitsPageState extends State<AdminAgencyVisitsPage>
       itemCount: visits.length,
       itemBuilder: (_, i) {
         final v = visits[i];
+        final hasProof = v['payment_proof'] != null && v['payment_proof'].toString().isNotEmpty;
+
         return Card(
+          elevation: 2,
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Colors.green,
-              child: Icon(Icons.check, color: Colors.white),
-            ),
-            title: Text(v['agency']['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${v['cafe']['name']} • ${v['tourist_count']} touristes\n${v['paid_at'] ?? ''}'),
-            isThreeLine: true,
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('${v['commission_amount'] ?? 0} DH',
-                    style: const TextStyle(
-                        color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
-                const Text('payé', style: TextStyle(color: Colors.grey, fontSize: 11)),
-              ],
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
+            onTap: hasProof ? () => _showPaymentProof(v['payment_proof']) : null,
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.green.shade100,
+                child: const Icon(Icons.check, color: Colors.green),
+              ),
+              title: Text(v['agency']['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('${v['cafe']['name']} • ${v['tourist_count']} touristes\n${v['paid_at'] ?? ''}'),
+              isThreeLine: true,
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('${v['commission_amount'] ?? 0} DH',
+                      style: const TextStyle(
+                          color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text('payé', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                  if (hasProof)
+                    const Icon(Icons.image, size: 14, color: Colors.blue),
+                ],
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  void _showPaymentProof(String? proofPath) {
+    if (proofPath == null) return;
+    
+    final imageUrl = ApiService.getFullImageUrl(proofPath);
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppBar(
+              title: const Text('Preuve de paiement', style: TextStyle(fontSize: 16)),
+              automaticallyImplyLeading: false,
+              actions: [
+                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+              ],
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              child: InteractiveViewer(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                        Text('Image non disponible'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

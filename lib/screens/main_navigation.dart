@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'no_internet_page.dart';
 
+import 'package:store_app/l10n/app_localizations.dart';
+
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -22,6 +24,15 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
   bool _isOffline = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+  // Global Keys for each tab's navigator
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+  ];
 
   @override
   void initState() {
@@ -49,13 +60,28 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const CafesPage(),
-    const AnniversaryPage(),
-    const EventsPage(),
-    const CartPage(),
-  ];
+  Widget _buildNavigator(int index) {
+    return Offstage(
+      offstage: _selectedIndex != index,
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (routeSettings) {
+          return MaterialPageRoute(
+            builder: (context) {
+              switch (index) {
+                case 0: return const HomePage();
+                case 1: return const CafesPage();
+                case 2: return const AnniversaryPage();
+                case 3: return const EventsPage();
+                case 4: return const CartPage();
+                default: return const HomePage();
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,62 +89,86 @@ class _MainNavigationState extends State<MainNavigation> {
       return NoInternetPage(onRetry: _checkConnectivity);
     }
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: Consumer<CartProvider>(
-        builder: (context, cart, child) {
-          return BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) {
-              setState(() => _selectedIndex = index);
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Theme.of(context).primaryColor,
-            unselectedItemColor: Colors.grey,
-            items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Accueil',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.store),
-                label: 'Cafés',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.cake_outlined),
-                label: 'Anniversaire',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.event_outlined),
-                label: 'Événements',
-              ),
-              BottomNavigationBarItem(
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.shopping_cart_outlined),
-                    if (cart.itemCount > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: CircleAvatar(
-                          radius: 8,
-                          backgroundColor: Colors.red,
-                          child: Text(
-                            '${cart.itemCount}',
-                            style: const TextStyle(fontSize: 10, color: Colors.white),
-                          ),
-                        ),
-                      )
-                  ],
+    final l10n = AppLocalizations.of(context)!;
+
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        final isFirstRouteInCurrentTab = !await _navigatorKeys[_selectedIndex].currentState!.maybePop();
+        if (isFirstRouteInCurrentTab) {
+          if (_selectedIndex != 0) {
+            setState(() => _selectedIndex = 0);
+          }
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _buildNavigator(0),
+            _buildNavigator(1),
+            _buildNavigator(2),
+            _buildNavigator(3),
+            _buildNavigator(4),
+          ],
+        ),
+        bottomNavigationBar: Consumer<CartProvider>(
+          builder: (context, cart, child) {
+            return BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: (index) {
+                if (_selectedIndex == index) {
+                  // If clicking the active tab, pop all the way to the first route
+                  _navigatorKeys[index].currentState!.popUntil((route) => route.isFirst);
+                } else {
+                  setState(() => _selectedIndex = index);
+                }
+              },
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: Theme.of(context).primaryColor,
+              unselectedItemColor: Colors.grey,
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.home),
+                  label: l10n.home,
                 ),
-                label: 'Panier',
-              ),
-            ],
-          );
-        },
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.store),
+                  label: l10n.cafes,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.cake_outlined),
+                  label: l10n.anniversary,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.event_outlined),
+                  label: l10n.events,
+                ),
+                BottomNavigationBarItem(
+                  icon: Stack(
+                    children: [
+                      const Icon(Icons.shopping_cart_outlined),
+                      if (cart.itemCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: CircleAvatar(
+                            radius: 8,
+                            backgroundColor: Colors.red,
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: const TextStyle(fontSize: 10, color: Colors.white),
+                            ),
+                          ),
+                        )
+                    ],
+                  ),
+                  label: l10n.cart,
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
