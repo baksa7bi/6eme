@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/agency_provider.dart';
 import '../providers/theme_provider.dart';
-import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import 'app_drawer.dart';
-import 'main_navigation.dart';
 import 'edit_profile_page.dart';
 
 class SettingsPage extends StatefulWidget {

@@ -4,13 +4,10 @@ import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../providers/cart_provider.dart';
-import 'reservation_page.dart';  // Access to ReservationPage if needed
+// Access to ReservationPage if needed
 import '../models/cafe.dart'; // To access cafe data if needed
-import '../providers/theme_provider.dart';
 import 'app_drawer.dart';
 import 'cafe_detail_page.dart';
-import 'register_page.dart';
 import 'login_page.dart';
 import 'search_page.dart';
 import '../services/api_service.dart';
@@ -79,10 +76,11 @@ class _HomePageState extends State<HomePage> {
       final result = await ApiService.claimFirstTryCoupon(auth.user!.id.toString(), deviceId);
       
       if (mounted) {
+        final hasCoupons = result['coupons'] != null || result['coupon'] != null;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? (result['coupon'] != null ? l10n.congratsGift : l10n.alreadyClaimed)),
-            backgroundColor: result['coupon'] != null ? Colors.green : Colors.red,
+            content: Text(result['message'] ?? (hasCoupons ? l10n.congratsGift : l10n.alreadyClaimed)),
+            backgroundColor: hasCoupons ? Colors.green : Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -99,7 +97,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final List<Map<String, dynamic>> _categories = [
+    final List<Map<String, dynamic>> categories = [
       {'name': l10n.cafes, 'icon': Icons.coffee},
       {'name': l10n.coldDrinks, 'icon': Icons.local_drink},
       {'name': l10n.breakfast, 'icon': Icons.bakery_dining},

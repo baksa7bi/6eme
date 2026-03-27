@@ -4,14 +4,17 @@ import '../providers/cart_provider.dart';
 import 'home_page.dart';
 import 'cafes_page.dart';
 import 'cart_page.dart';
-import 'anniversary_page.dart';
+import 'reservation_choice_page.dart';
 import 'events_page.dart';
 
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'no_internet_page.dart';
-
 import 'package:store_app/l10n/app_localizations.dart';
+import '../providers/navigation_provider.dart';
+import '../providers/auth_provider.dart';
+import 'email_verification_page.dart';
+import 'delivery_dashboard_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -21,7 +24,6 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
   bool _isOffline = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
@@ -60,9 +62,9 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  Widget _buildNavigator(int index) {
+  Widget _buildNavigator(int index, int selectedIndex) {
     return Offstage(
-      offstage: _selectedIndex != index,
+      offstage: selectedIndex != index,
       child: Navigator(
         key: _navigatorKeys[index],
         onGenerateRoute: (routeSettings) {
@@ -71,7 +73,7 @@ class _MainNavigationState extends State<MainNavigation> {
               switch (index) {
                 case 0: return const HomePage();
                 case 1: return const CafesPage();
-                case 2: return const AnniversaryPage();
+                case 2: return const ReservationChoicePage();
                 case 3: return const EventsPage();
                 case 4: return const CartPage();
                 default: return const HomePage();
@@ -89,39 +91,52 @@ class _MainNavigationState extends State<MainNavigation> {
       return NoInternetPage(onRetry: _checkConnectivity);
     }
 
+    final auth = context.watch<AuthProvider>();
+    
+    // Redirect delivery role to their dashboard
+    if (auth.isAuthenticated && auth.user?.isDelivery == true) {
+      return const DeliveryDashboardPage();
+    }
+
+    if (auth.isAuthenticated && (auth.user?.role == 'client') && !auth.user!.isEmailVerified) {
+      return const EmailVerificationPage();
+    }
+
     final l10n = AppLocalizations.of(context)!;
+    final navProvider = Provider.of<NavigationProvider>(context);
+    final selectedIndex = navProvider.selectedIndex;
 
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) async {
         if (didPop) return;
-        final isFirstRouteInCurrentTab = !await _navigatorKeys[_selectedIndex].currentState!.maybePop();
+        final isFirstRouteInCurrentTab = !await _navigatorKeys[selectedIndex].currentState!.maybePop();
         if (isFirstRouteInCurrentTab) {
-          if (_selectedIndex != 0) {
-            setState(() => _selectedIndex = 0);
+          if (selectedIndex != 0) {
+            navProvider.goToHome();
           }
         }
       },
       child: Scaffold(
         body: Stack(
           children: [
-            _buildNavigator(0),
-            _buildNavigator(1),
-            _buildNavigator(2),
-            _buildNavigator(3),
-            _buildNavigator(4),
+            _buildNavigator(0, selectedIndex),
+            _buildNavigator(1, selectedIndex),
+            _buildNavigator(2, selectedIndex),
+            _buildNavigator(3, selectedIndex),
+            _buildNavigator(4, selectedIndex),
           ],
         ),
         bottomNavigationBar: Consumer<CartProvider>(
           builder: (context, cart, child) {
             return BottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: selectedIndex,
               onTap: (index) {
-                if (_selectedIndex == index) {
+                if (selectedIndex == index) {
                   // If clicking the active tab, pop all the way to the first route
                   _navigatorKeys[index].currentState!.popUntil((route) => route.isFirst);
                 } else {
-                  setState(() => _selectedIndex = index);
+                  navProvider.setSelectedIndex(index);
                 }
               },
               type: BottomNavigationBarType.fixed,
@@ -134,11 +149,11 @@ class _MainNavigationState extends State<MainNavigation> {
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.store),
-                  label: l10n.cafes,
+                  label: l10n.restaurants,
                 ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.cake_outlined),
-                  label: l10n.anniversary,
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.date_range_outlined),
+                  label: 'Réservation',
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.event_outlined),

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/cart_provider.dart';
-import '../models/menu_item.dart';
 import '../services/api_service.dart';
 
 class FavoritesPage extends StatelessWidget {

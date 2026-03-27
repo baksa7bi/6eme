@@ -22,10 +22,13 @@ class CartItem {
   }
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
+    var menuItemData = json['menuItem'] ?? json['menu_item'];
     return CartItem(
-      menuItem: MenuItem.fromJson(json['menuItem']),
+      menuItem: menuItemData != null 
+          ? MenuItem.fromJson(menuItemData)
+          : MenuItem(id: '0', name: 'Unknown', description: '', price: 0, imageUrl: '', category: '', cafeId: '0'),
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
-      specialInstructions: json['specialInstructions'],
+      specialInstructions: json['specialInstructions'] ?? json['special_instructions'],
     );
   }
 }

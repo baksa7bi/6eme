@@ -78,7 +78,7 @@ class CafesPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image placeholder
-            Container(
+            SizedBox(
               height: 180,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),

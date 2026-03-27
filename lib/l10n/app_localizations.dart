@@ -118,6 +118,12 @@ abstract class AppLocalizations {
   /// **'Cafes'**
   String get cafes;
 
+  /// No description provided for @restaurants.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get restaurants;
+
   /// No description provided for @anniversary.
   ///
   /// In en, this message translates to:

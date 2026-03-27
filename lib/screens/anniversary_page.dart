@@ -104,7 +104,7 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
                         prefixIcon: const Icon(Icons.location_on),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      value: _selectedCafe,
+                      initialValue: _selectedCafe,
                       items: _cafes.map((cafe) => DropdownMenuItem(value: cafe, child: Text(cafe.name))).toList(),
                       onChanged: (val) => setState(() => _selectedCafe = val),
                       validator: (val) => val == null ? 'Veuillez choisir un café' : null,
@@ -176,7 +176,7 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate() && _selectedDate != null && _selectedTime != null) {
                       final auth = Provider.of<AuthProvider>(context, listen: false);
                       final reservationProvider = Provider.of<ReservationProvider>(context, listen: false);
@@ -196,28 +196,40 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
                         ),
                         numberOfPeople: int.tryParse(_guestsController.text) ?? 1,
                         specialRequests: _notesController.text,
+                        type: 'birthday',
                         status: 'pending', // Anniversary requests start as pending
                       );
 
-                      reservationProvider.addReservation(reservation);
+                      final success = await reservationProvider.createReservation(reservation);
                       
+                      if (!success) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Erreur lors de l\'envoi de la demande. Veuillez réessayer.')),
+                          );
+                        }
+                        return;
+                      }
+
                       // Submit logic
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Demande envoyée'),
-                          content: const Text('Votre demande de réservation pour anniversaire a été reçue. Nous vous contacterons pour confirmer les détails.'),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close dialog
-                                Navigator.pop(context); // Go back
-                              }, 
-                              child: const Text('OK')
-                            ),
-                          ],
-                        ),
-                      );
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('Demande envoyée'),
+                            content: const Text('Votre demande de réservation pour anniversaire a été reçue. Nous vous contacterons pour confirmer les détails.'),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(dialogContext); // Close dialog
+                                  Navigator.pop(context); // Go back to choice page
+                                }, 
+                                child: const Text('OK')
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     } else if (_selectedDate == null || _selectedTime == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Veuillez sélectionner la date et l\'heure')),

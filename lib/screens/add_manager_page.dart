@@ -108,7 +108,7 @@ class _AddManagerPageState extends State<AddManagerPage> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: 'Sélectionner le Café *'),
-                value: _selectedCafeId,
+                initialValue: _selectedCafeId,
                 items: _cafes.map((cafe) {
                   return DropdownMenuItem<String>(
                     value: cafe.id,

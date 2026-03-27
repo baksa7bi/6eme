@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/favorite_provider.dart';
 import 'login_page.dart';
-import 'anniversary_page.dart';
 import 'orders_page.dart';
 import 'my_reservations_page.dart';
-import '../models/menu_item.dart';
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -19,11 +16,11 @@ import 'add_manager_page.dart';
 import 'settings_page.dart';
 import 'coupons_page.dart';
 import 'manager_coupons_page.dart';
+import 'delivery_dashboard_page.dart';
 import 'agencies_page.dart';
-import 'agency_login_page.dart';
-import 'agency_dashboard_page.dart';
 import 'admin_agency_visits_page.dart';
 import '../providers/agency_provider.dart';
+import '../providers/navigation_provider.dart';
 import '../providers/locale_provider.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 
@@ -69,6 +66,41 @@ class AppDrawer extends StatelessWidget {
                       auth.user?.email ?? '',
                       style: const TextStyle(color: Colors.white70),
                     ),
+                    if (auth.user != null && !auth.user!.isEmailVerified)
+                      GestureDetector(
+                        onTap: () async {
+                          try {
+                            final result = await ApiService.resendVerificationEmail();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(result['message'] ?? 'Email envoyé.')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Erreur lors de l\'envoi de l\'email.')),
+                              );
+                            }
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text('Email non vérifié (Renvoyer)', style: TextStyle(color: Colors.white, fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 )
               : agencyProvider.isAgencyAuthenticated
@@ -128,35 +160,37 @@ class AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
                 _buildMenuItem(context, Icons.home, l10n.home, () {
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close drawer
+                  Provider.of<NavigationProvider>(context, listen: false).goToHome();
                 }),
                 if (auth.isAuthenticated) ...[
-                  _buildMenuItem(context, Icons.favorite_border, l10n.favorites, () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
-                  }),
-                  _buildMenuItem(context, Icons.confirmation_num_outlined, l10n.myCoupons, () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CouponsPage()));
-                  }),
-                  _buildMenuItem(context, Icons.inventory_2_outlined, l10n.myOrders, () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
-                  }),
-                  _buildMenuItem(context, Icons.event_note_outlined, l10n.myReservations, () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
-                  }),
+                  if (auth.user?.role == 'client') ...[
+                    _buildMenuItem(context, Icons.favorite_border, l10n.favorites, () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+                    }),
+                    _buildMenuItem(context, Icons.confirmation_num_outlined, l10n.myCoupons, () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CouponsPage()));
+                    }),
+                  ],
+                  if (auth.user?.role == 'client' || auth.user?.isManager == true || auth.user?.isAdmin == true) ...[
+                    _buildMenuItem(context, Icons.inventory_2_outlined, l10n.myOrders, () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
+                    }),
+                    _buildMenuItem(context, Icons.event_note_outlined, l10n.myReservations, () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
+                    }),
+                  ],
+                  if (auth.user?.isDelivery == true) ...[
+                    _buildMenuItem(context, Icons.delivery_dining, 'Livraisons', () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DeliveryDashboardPage()));
+                    }),
+                  ],
                 ],
-                
-                _buildMenuItem(context, Icons.cake_outlined, l10n.anniversary, () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AnniversaryPage()));
-                }),
-                _buildMenuItem(context, Icons.event, l10n.events, () {
-                  // If there is an events list page, push it here
-                  // For now, let's just keep the events icon for consistency
-                }),
                 
                 const Divider(),
                 _buildMenuItem(context, Icons.settings_outlined, l10n.settings, () {

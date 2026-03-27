@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
 import 'login_page.dart';
 import 'reservation_page.dart';
+import 'product_detail_page.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 
 class CafeDetailPage extends StatefulWidget {
@@ -220,17 +221,16 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   Widget _buildMenuItem(MenuItem item) {
     final auth = context.read<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          context.read<CartProvider>().addItem(item);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${item.name} ${l10n.addedToCart}'),
-              duration: const Duration(seconds: 1),
-              behavior: SnackBarBehavior.floating,
+          // Open the product detail page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProductDetailPage(item: item),
             ),
           );
         },
@@ -287,25 +287,46 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               Consumer<FavoriteProvider>(
                 builder: (context, favoriteProvider, _) {
                   final isFavorite = favoriteProvider.isFavorite(item.id);
-                  return IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : null,
-                    ),
-                    onPressed: () {
-                      if (auth.isAuthenticated) {
-                        favoriteProvider.toggleFavorite(item);
-                      } else {
-                        auth.setPendingFavorite(item);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(content: Text(l10n.login)),
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      }
-                    },
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.add_shopping_cart, color: Colors.green),
+                        onPressed: () {
+                          if (!item.available) return;
+                          if (!auth.isAuthenticated) {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                            return;
+                          }
+                          if (!auth.user!.isEmailVerified) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Veuillez vérifier votre email')));
+                            return;
+                          }
+                          context.read<CartProvider>().addItem(item);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} ajouté au panier')));
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : null,
+                        ),
+                        onPressed: () {
+                          if (auth.isAuthenticated) {
+                            favoriteProvider.toggleFavorite(item);
+                          } else {
+                            auth.setPendingFavorite(item);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                               SnackBar(content: Text(l10n.login)),
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   );
                 },
               ),

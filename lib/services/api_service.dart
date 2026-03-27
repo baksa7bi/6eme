@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import '../models/user.dart';
 import '../models/cafe.dart';
 import '../models/menu_item.dart';
 import '../models/event.dart';
 import '../models/coupon.dart';
 import '../models/agency.dart';
+import '../models/order.dart';
+import '../models/reservation.dart';
 
 class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
@@ -17,7 +18,7 @@ class ApiService {
   static const String baseUrl = 'http://192.168.100.40:8000/api'; 
   static String get storageUrl {
     if (baseUrl.endsWith('/api')) {
-      return baseUrl.substring(0, baseUrl.length - 4) + '/storage';
+      return '${baseUrl.substring(0, baseUrl.length - 4)}/storage';
     }
     return '$baseUrl/storage';
   }
@@ -89,8 +90,20 @@ class ApiService {
         if (address != null) 'address': address,
       }),
     );
-    return jsonDecode(response.body);
+    print('ApiService register: status code = ${response.statusCode}');
+    print('ApiService register: body = ${response.body}');
+    
+    final payload = jsonDecode(response.body);
+    if (response.statusCode >= 400) {
+      if (payload['errors'] != null) {
+        String errorMsg = payload['errors'].values.map((e) => (e as List).join(', ')).join('\n');
+        throw Exception(errorMsg);
+      }
+      throw Exception(payload['message'] ?? 'Erreur lors de l\'inscription');
+    }
+    return payload;
   }
+
 
   static Future<Map<String, dynamic>> updateProfile(String name, String email, String phone, {String? address, String? password}) async {
     final body = <String, dynamic>{
@@ -131,6 +144,14 @@ class ApiService {
       return data.cast<Map<String, dynamic>>();
     }
     return [];
+  }
+
+  static Future<Map<String, dynamic>> getUser() async {
+    final response = await http.get(Uri.parse('$baseUrl/user'), headers: _headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load user');
   }
 
   // Favorites
@@ -180,6 +201,21 @@ class ApiService {
   }
 
   // Orders
+  static Future<List<OrderItem>> getOrders({String? status, String? type}) async {
+    String url = '$baseUrl/orders';
+    List<String> params = [];
+    if (status != null) params.add('status=$status');
+    if (type != null) params.add('type=$type');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+    
+    final response = await http.get(Uri.parse(url), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => OrderItem.fromJson(json)).toList();
+    }
+    return [];
+  }
+
   static Future<bool> createOrder(Map<String, dynamic> orderData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/orders'),
@@ -190,6 +226,21 @@ class ApiService {
   }
 
   // Reservations
+  static Future<List<Reservation>> getReservations({String? status, String? type}) async {
+    String url = '$baseUrl/reservations';
+    List<String> params = [];
+    if (status != null) params.add('status=$status');
+    if (type != null) params.add('type=$type');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+
+    final response = await http.get(Uri.parse(url), headers: _headers);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Reservation.fromJson(json)).toList();
+    }
+    return [];
+  }
+
   static Future<bool> createReservation(Map<String, dynamic> reservationData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/reservations'),
@@ -327,14 +378,17 @@ class ApiService {
     throw Exception('Failed to load coupons');
   }
 
-  static Future<Map<String, dynamic>> validateCoupon(String code, int userId) async {
+  static Future<Map<String, dynamic>> validateCoupon(String code, int userId, {String? orderType}) async {
+    final body = <String, dynamic>{
+      'code': code,
+      'user_id': userId,
+    };
+    if (orderType != null) body['order_type'] = orderType;
+
     final response = await http.post(
       Uri.parse('$baseUrl/coupons/validate'),
       headers: _headers,
-      body: jsonEncode({
-        'code': code,
-        'user_id': userId,
-      }),
+      body: jsonEncode(body),
     );
     return jsonDecode(response.body);
   }
@@ -363,7 +417,7 @@ class ApiService {
     request.fields['category'] = item.category;
     request.fields['cafe_id'] = item.cafeId;
     request.fields['user_id'] = userId;
-    if (item.description != null) request.fields['description'] = item.description!;
+    request.fields['description'] = item.description;
 
     if (imageFile != null) {
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -439,7 +493,7 @@ class ApiService {
     }
   }
 
-  static Future<bool> requestCoupon(int userId, File imageFile, double amount) async {
+  static Future<bool> requestCoupon(int userId, File imageFile, double amount, {int? cafeId}) async {
     try {
       final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/coupon-requests'));
       request.headers.addAll({
@@ -449,6 +503,7 @@ class ApiService {
 
       request.fields['user_id'] = userId.toString();
       request.fields['amount'] = amount.toString();
+      if (cafeId != null) request.fields['cafe_id'] = cafeId.toString();
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
       final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
@@ -463,6 +518,7 @@ class ApiService {
       rethrow;
     }
   }
+
 
   static Future<List<Map<String, dynamic>>> getCouponRequests({int? userId}) async {
     String url = '$baseUrl/coupon-requests';
@@ -620,6 +676,53 @@ class ApiService {
         'user_id': userId,
         'device_id': deviceId,
       }),
+    );
+    return jsonDecode(response.body);
+  }
+
+
+  static Future<bool> updateOrderStatus(String id, String status) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/orders/$id/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<List<Coupon>> getUserCoupons(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/coupons?user_id=$userId'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Coupon.fromJson(json)).toList();
+    }
+    return [];
+  }
+
+  static Future<bool> markCouponAsUsed(int id) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupons/$id/mark-as-used'),
+      headers: _headers,
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<Map<String, dynamic>> claimDailyCoupon(String userId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/coupons/claim-daily'),
+      headers: _headers,
+      body: jsonEncode({'user_id': userId}),
+    );
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> resendVerificationEmail() async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/email/verification-notification'),
+      headers: _headers,
     );
     return jsonDecode(response.body);
   }

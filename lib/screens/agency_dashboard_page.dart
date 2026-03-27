@@ -58,7 +58,7 @@ class _AgencyDashboardPageState extends State<AgencyDashboardPage> {
                 children: [
                   DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: selectedCafeId,
+                    initialValue: selectedCafeId,
                     hint: const Text('Sélectionner le Café'),
                     items: _cafes.map((c) => DropdownMenuItem<String>(
                       value: c.id, 

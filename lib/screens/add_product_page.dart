@@ -132,7 +132,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(labelText: 'Catégorie'),
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       items: _categories.map((catName) {
                         return DropdownMenuItem<String>(
                           value: catName,
@@ -156,7 +156,7 @@ class _AddProductPageState extends State<AddProductPage> {
                             labelText: 'Café',
                             helperText: isManagerOnly ? 'Assigné à votre café' : null,
                           ),
-                          value: _selectedCafeId,
+                          initialValue: _selectedCafeId,
                           items: [
                             if (auth.user?.isAdmin == true)
                               const DropdownMenuItem<String>(

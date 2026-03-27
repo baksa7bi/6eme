@@ -15,17 +15,23 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
+import 'providers/navigation_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR', null);
-  
+
+  // Create AuthProvider early so we can restore the session before showing UI
+  final authProvider = AuthProvider();
+  await authProvider.tryAutoLogin();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        // Use the already-initialized authProvider (with session restored)
+        ChangeNotifierProvider<AuthProvider>(create: (_) => authProvider),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
         ChangeNotifierProvider(create: (_) => ReservationProvider()),
@@ -33,6 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => AgencyProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: const CafeApp(),
     ),

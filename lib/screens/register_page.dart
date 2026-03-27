@@ -28,21 +28,29 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    final success = await context.read<AuthProvider>().register(
-      _nameController.text,
-      _emailController.text,
-      _passwordController.text,
-      phone: _phoneController.text,
-      address: _addressController.text.isNotEmpty ? _addressController.text : null,
-      agencyProvider: context.read<AgencyProvider>(),
-    );
-
-    if (success && mounted) {
-      Navigator.pop(context); // Go back to login or home
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec de l\'inscription. Vérifiez vos informations.')),
+    try {
+      final success = await context.read<AuthProvider>().register(
+        _nameController.text,
+        _emailController.text,
+        _passwordController.text,
+        phone: _phoneController.text,
+        address: _addressController.text.isNotEmpty ? _addressController.text : null,
+        agencyProvider: context.read<AgencyProvider>(),
       );
+
+      if (success && mounted) {
+        Navigator.pop(context); // Go back to login or home
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 

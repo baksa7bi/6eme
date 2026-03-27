@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../models/coupon.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'app_drawer.dart';
-import 'main_navigation.dart';
 import 'login_page.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 
@@ -51,6 +49,16 @@ class _CouponsPageState extends State<CouponsPage> {
       return;
     }
 
+    if (!authProvider.user!.isEmailVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez vérifier votre adresse e-mail pour accéder à cette fonctionnalité.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -58,42 +66,85 @@ class _CouponsPageState extends State<CouponsPage> {
     );
 
     if (pickedFile != null) {
-      // Show dialog to enter amount
+      // Load cafes for selection
+      List<Map<String, dynamic>> cafes = [];
+      try {
+        cafes = (await ApiService.getCafes()).map((c) => {'id': int.parse(c.id), 'name': c.name}).toList();
+      } catch (_) {}
+
+      // Show dialog to pick cafe and enter amount
       final amountController = TextEditingController();
-      final double? amount = await showDialog<double>(
+      int? selectedCafeId;
+
+      final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) {
           final l10n = AppLocalizations.of(context)!;
-          return AlertDialog(
-            title: Text(l10n.receiptAmount),
-            content: TextField(
-              controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                hintText: l10n.enterTotalAmount,
-                suffixText: 'DH',
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
-              ElevatedButton(
-                onPressed: () {
-                  final val = double.tryParse(amountController.text);
-                  if (val != null && val > 0) {
-                    Navigator.pop(context, val);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.invalidAmount)),
-                    );
-                  }
-                },
-                child: Text(l10n.continueText),
-              ),
-            ],
+          return StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return AlertDialog(
+                title: Text(l10n.receiptAmount),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedCafeId,
+                      hint: const Text('Choisir un café'),
+                      items: cafes.map((c) {
+                        return DropdownMenuItem<int>(
+                          value: c['id'] as int,
+                          child: Text(c['name'] as String),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setStateDialog(() => selectedCafeId = val),
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.store, color: Colors.orange),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        hintText: l10n.enterTotalAmount,
+                        suffixText: 'DH',
+                        prefixIcon: const Icon(Icons.receipt_long, color: Colors.orange),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (selectedCafeId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Veuillez sélectionner un café')),
+                        );
+                        return;
+                      }
+                      final val = double.tryParse(amountController.text);
+                      if (val != null && val > 0) {
+                        Navigator.pop(context, true);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.invalidAmount)),
+                        );
+                      }
+                    },
+                    child: Text(l10n.continueText),
+                  ),
+                ],
+              );
+            },
           );
         },
       );
 
+      if (confirmed != true) return;
+      final amount = double.tryParse(amountController.text);
       if (amount == null) return;
 
       setState(() => _isUploading = true);
@@ -103,8 +154,8 @@ class _CouponsPageState extends State<CouponsPage> {
           int.parse(authProvider.user!.id),
           File(pickedFile.path),
           amount,
+          cafeId: selectedCafeId,
         );
-// ... existing code in the try block
 
         if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +182,44 @@ class _CouponsPageState extends State<CouponsPage> {
     }
   }
 
+
+  Future<void> _claimDailyCoupon() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (!auth.isAuthenticated) return;
+
+    if (!auth.user!.isEmailVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez vérifier votre adresse e-mail pour réclamer ce coupon.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
+    setState(() => _isUploading = true);
+    try {
+      final result = await ApiService.claimDailyCoupon(auth.user!.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Action effectuée'),
+            backgroundColor: result['coupon'] != null ? Colors.green : Colors.orange,
+          ),
+        );
+        _loadCoupons();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -143,7 +232,7 @@ class _CouponsPageState extends State<CouponsPage> {
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(l10n.myCoupons, style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
         centerTitle: true,
       ),
@@ -156,6 +245,21 @@ class _CouponsPageState extends State<CouponsPage> {
           return Column(
             children: [
               _buildRequestsSection(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isUploading ? null : _claimDailyCoupon,
+                    icon: const Icon(Icons.card_giftcard),
+                    label: const Text('Réclamer mon coupon journalier (15 DH)'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber[700],
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 child: FutureBuilder<List<Coupon>>(
                   future: _couponsFuture,

@@ -18,6 +18,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cafes => 'Cafés';
 
   @override
+  String get restaurants => 'Restaurants';
+
+  @override
   String get anniversary => 'Anniversaire';
 
   @override

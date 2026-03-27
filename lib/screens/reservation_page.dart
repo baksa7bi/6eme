@@ -101,6 +101,16 @@ class _ReservationPageState extends State<ReservationPage> {
                     return;
                   }
 
+                  if (!auth.user!.isEmailVerified) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Veuillez vérifier votre adresse e-mail pour effectuer une réservation.'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
+
                   final reservationProvider = Provider.of<ReservationProvider>(context, listen: false);
                   
                   // Create reservation object
@@ -117,39 +127,60 @@ class _ReservationPageState extends State<ReservationPage> {
                       _selectedTime.minute,
                     ),
                     numberOfPeople: _numberOfPeople,
-                    status: 'confirmed',
+                    type: 'table',
+                    status: 'pending',
                   );
 
-                  reservationProvider.addReservation(reservation);
+                  final success = await reservationProvider.createReservation(reservation);
                   
-                  // Show success dialog directly
-                  showDialog(
+                  if (!success) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Erreur lors de la réservation. Veuillez réessayer.')),
+                      );
+                    }
+                    return;
+                  }
+
+                  // Capture the time format before async gap
+                  final formattedTime = _selectedTime.format(context);
+                  final day = _selectedDate.day;
+                  final month = _selectedDate.month;
+                  final year = _selectedDate.year;
+                  final people = _numberOfPeople;
+
+                  // Show success dialog — use a separate dialogContext so we
+                  // never accidentally pop the wrong route
+                  await showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Réservation Confirmée'),
+                    useRootNavigator: false,
+                    barrierDismissible: false,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Réservation Confirmée ✅'),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Votre table pour $_numberOfPeople personnes est réservée.'),
+                          Text('Votre table pour $people personnes est réservée.'),
                           const SizedBox(height: 8),
-                          Text('Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
-                          Text('Heure: ${_selectedTime.format(context)}'),
+                          Text('Date: $day/$month/$year'),
+                          Text('Heure: $formattedTime'),
                           const SizedBox(height: 16),
-                          const Text('Nous vous attendons avec impatience !', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('Nous vous attendons avec impatience !',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                       actions: [
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Close dialog
-                            Navigator.pop(context); // Go back to cafe detail
-                          },
+                          onPressed: () => Navigator.of(dialogContext).pop(),
                           child: const Text('Génial !'),
                         ),
                       ],
                     ),
                   );
+
+                  // After dialog closed, go back to the café detail page
+                  if (mounted) Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

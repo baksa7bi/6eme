@@ -18,6 +18,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cafes => 'المقاهي';
 
   @override
+  String get restaurants => 'المطاعم';
+
+  @override
   String get anniversary => 'الذكرى السنوية';
 
   @override

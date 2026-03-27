@@ -151,7 +151,7 @@ class _AddEventPageState extends State<AddEventPage> {
                             labelText: 'Café / Lieu',
                             helperText: isManagerOnly ? 'Assigné à votre café' : null,
                           ),
-                          value: _selectedCafeId,
+                          initialValue: _selectedCafeId,
                           items: [
                             if (auth.user?.isAdmin == true)
                               const DropdownMenuItem<String>(
