@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/cart_provider.dart';
+import '../providers/navigation_provider.dart';
 import '../providers/theme_provider.dart';
 import 'login_page.dart';
+import 'main_navigation.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -13,6 +16,10 @@ class ProfilePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Profil'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
@@ -37,7 +44,7 @@ class ProfilePage extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 30),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                  Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -102,6 +109,9 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 20),
           _buildMenuItem(Icons.logout, 'Se déconnecter', color: Colors.red, onTap: () {
             Provider.of<AuthProvider>(context, listen: false).logout();
+            Provider.of<CartProvider>(context, listen: false).clear();
+            Provider.of<NavigationProvider>(context, listen: false).setSelectedIndex(0);
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainNavigation()), (route) => false);
           }),
         ],
 

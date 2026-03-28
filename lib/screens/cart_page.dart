@@ -10,6 +10,7 @@ import 'login_page.dart';
 import 'orders_page.dart';
 import '../services/api_service.dart';
 import '../models/agency.dart';
+import 'package:store_app/l10n/app_localizations.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -73,51 +74,95 @@ class _CartPageState extends State<CartPage> {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: const EdgeInsets.all(20),
-          height: MediaQuery.of(context).size.height * 0.7,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Mes Coupons', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const Text('Sélectionnez un ou plusieurs coupons à utiliser', style: TextStyle(color: Colors.grey, fontSize: 12)),
-              const Divider(),
-              Expanded(
-                child: _availableCoupons.isEmpty
-                    ? const Center(child: Text('Vous n\'avez aucun coupon disponible.'))
-                    : ListView.builder(
-                        itemCount: _availableCoupons.length,
-                        itemBuilder: (context, index) {
-                          final coupon = _availableCoupons[index];
-                          final isSelected = _selectedCoupons.any((c) => c.id == coupon.id);
-                          return CheckboxListTile(
-                            title: Text(coupon.code, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text('${coupon.discountAmount} DH de réduction'),
-                            value: isSelected,
-                            onChanged: (val) {
-                              setModalState(() {
-                                if (val == true) {
-                                  _selectedCoupons.add(coupon);
-                                } else {
-                                  _selectedCoupons.removeWhere((c) => c.id == coupon.id);
-                                }
-                              });
-                              setState(() {}); // Update main UI
-                            },
-                          );
-                        },
-                      ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
+        builder: (context, setModalState) {
+          bool isRefreshing = false;
+
+          Future<void> refreshCoupons() async {
+            final auth = Provider.of<AuthProvider>(context, listen: false);
+            if (!auth.isAuthenticated) return;
+            setModalState(() => isRefreshing = true);
+            try {
+              final coupons = await ApiService.getUserCoupons(auth.user!.id);
+              setState(() {
+                _availableCoupons = coupons.where((c) => !c.isUsed).toList();
+              });
+              setModalState(() {});
+            } finally {
+              setModalState(() => isRefreshing = false);
+            }
+          }
+
+          return Container(
+            padding: const EdgeInsets.all(20),
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Mes Coupons', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    IconButton(
+                      icon: isRefreshing
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.refresh),
+                      tooltip: 'Actualiser',
+                      onPressed: isRefreshing ? null : refreshCoupons,
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ),
+                const Text('Sélectionnez un ou plusieurs coupons à utiliser', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Divider(),
+                Expanded(
+                  child: _availableCoupons.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Vous n\'avez aucun coupon disponible.'),
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Actualiser'),
+                                onPressed: isRefreshing ? null : refreshCoupons,
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _availableCoupons.length,
+                          itemBuilder: (context, index) {
+                            final coupon = _availableCoupons[index];
+                            final isSelected = _selectedCoupons.any((c) => c.id == coupon.id);
+                            return CheckboxListTile(
+                              title: Text(coupon.code, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text('${coupon.discountAmount} DH de réduction'),
+                              value: isSelected,
+                              onChanged: (val) {
+                                setModalState(() {
+                                  if (val == true) {
+                                    _selectedCoupons.add(coupon);
+                                  } else {
+                                    _selectedCoupons.removeWhere((c) => c.id == coupon.id);
+                                  }
+                                });
+                                setState(() {}); // Update main UI
+                              },
+                            );
+                          },
+                        ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -146,7 +191,13 @@ class _CartPageState extends State<CartPage> {
     final double finalTotal = (subtotal - _totalDiscount).clamp(0, double.infinity);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Votre Panier')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
+        ),
+        title: const Text('Votre Panier'),
+      ),
       body: cart.items.isEmpty
           ? _buildEmptyState()
           : Column(
@@ -354,12 +405,21 @@ class _CartPageState extends State<CartPage> {
   }
 
   void _handleCheckout(AuthProvider auth, CartProvider cart, Map<String, List<CartItem>> itemsByCafe, double finalTotal) {
+    if (auth.isAuthenticated && auth.user?.role != 'client') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('En tant que personnel, vous ne pouvez pas commander.')),
+      );
+      return;
+    }
     if (!auth.isAuthenticated) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.login)),
+      );
+      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
       return;
     }
     
-    if (!auth.user!.isEmailVerified) {
+    if (auth.user!.role == 'client' && !auth.user!.isEmailVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez vérifier votre email avant de commander.'), backgroundColor: Colors.orange),
       );
@@ -378,7 +438,7 @@ class _CartPageState extends State<CartPage> {
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(child: _orderTypeBtn(sheetContext, Icons.restaurant, 'Sur place', Colors.orange, () => _processOrders(auth, cart, itemsByCafe, 'onsite'))),
+                Expanded(child: _orderTypeBtn(sheetContext, Icons.restaurant, 'Emporter', Colors.orange, () => _processOrders(auth, cart, itemsByCafe, 'onsite'))),
                 const SizedBox(width: 16),
                 Expanded(child: _orderTypeBtn(sheetContext, Icons.delivery_dining, 'Livraison', Colors.blue, () => _showLocationDialog(auth, cart, itemsByCafe))),
               ],
@@ -490,25 +550,25 @@ class _CartPageState extends State<CartPage> {
 
   Future<void> _processOrders(AuthProvider auth, CartProvider cart, Map<String, List<CartItem>> itemsByCafe, String type) async {
     // Show loading
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    showDialog(
+      context: context, 
+      barrierDismissible: false, 
+      useRootNavigator: true,
+      builder: (_) => const Center(child: CircularProgressIndicator())
+    );
 
-    int successCount = 0;
-    int totalCafeOrders = itemsByCafe.keys.length;
-    List<String> couponCodes = _selectedCoupons.map((c) => c.code).toList();
+    try {
+      int successCount = 0;
+      int totalCafeOrders = itemsByCafe.keys.length;
+      List<String> couponCodes = _selectedCoupons.map((c) => c.code).toList();
 
-    // Iterate through each cafe group and create a separate order
-    for (int i = 0; i < itemsByCafe.keys.length; i++) {
-      String cafeId = itemsByCafe.keys.elementAt(i);
-      List<CartItem> cafeItems = itemsByCafe[cafeId]!;
-      double cafeSubtotal = cafeItems.fold(0, (sum, item) => sum + item.totalPrice);
-      bool isFirst = (i == 0);
-      
-      // Proportionally distribute discount if multiple cafes? 
-      // For simplicity, we apply full discount to the first order if possible, or distribute it.
-      // But multi-order discount logic is complex. 
-      // User said "split cart based on location", so we'll just create N orders.
-      // We apply coupons to the first order for now to ensure they are used.
-            final orderData = {
+      for (int i = 0; i < itemsByCafe.keys.length; i++) {
+        String cafeId = itemsByCafe.keys.elementAt(i);
+        List<CartItem> cafeItems = itemsByCafe[cafeId]!;
+        double cafeSubtotal = cafeItems.fold(0, (sum, item) => sum + item.totalPrice);
+        bool isFirst = (i == 0);
+        
+        final orderData = {
           'user_id': auth.user!.id,
           'cafe_id': int.tryParse(cafeId),
           'total_amount': cafeSubtotal - (isFirst ? _totalDiscount : 0),
@@ -524,22 +584,36 @@ class _CartPageState extends State<CartPage> {
           if (_selectedAgencyId != null) 'agency_id': _selectedAgencyId,
         };
 
-      final success = await ApiService.createOrder(orderData);
-      if (success) successCount++;
-    }
+        final success = await ApiService.createOrder(orderData);
+        if (success) successCount++;
+      }
 
-    if (!mounted) return;
-    Navigator.pop(context); // Close loading
+      if (!mounted) return;
+      // Close loading dialog specifically from root navigator
+      Navigator.of(context, rootNavigator: true).pop(); 
 
-    if (successCount == totalCafeOrders) {
-      cart.clear();
-      _showSuccessDialog();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Succès : $successCount/$totalCafeOrders commandes créées.'))
-      );
+      if (successCount == totalCafeOrders) {
+        cart.clear();
+        _showSuccessDialog();
+      } else if (successCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Succès partiel : $successCount/$totalCafeOrders commandes créées.'))
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors de la création de la commande. Veuillez réessayer.'), backgroundColor: Colors.red)
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Ensure spinner closed on error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : ${e.toString()}'), backgroundColor: Colors.red)
+        );
+      }
     }
   }
+
 
   void _showSuccessDialog() {
     showDialog(
@@ -549,11 +623,8 @@ class _CartPageState extends State<CartPage> {
         content: const Text('Vos commandes ont été réparties par établissement. Vous pouvez les suivre dans l\'onglet Mes Commandes.'),
         actions: [
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const OrdersPage()));
-            },
-            child: const Text('Suivre mes commandes'),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
         ],
       ),

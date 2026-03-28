@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/event.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'reservation_page.dart';
+import '../providers/navigation_provider.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -31,9 +33,11 @@ class _EventsPageState extends State<EventsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Événements à Venir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Theme.of(context).primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

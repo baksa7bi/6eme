@@ -142,6 +142,33 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                 Expanded(child: Text('Client: ${order.userId}', style: const TextStyle(fontWeight: FontWeight.w500))),
               ],
             ),
+            if (order.clientPhone != null && order.clientPhone!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.phone, size: 20, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final phoneUrl = 'tel:${order.clientPhone}';
+                        try {
+                          await launchUrl(Uri.parse(phoneUrl));
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Impossible de lancer l\'appel.')));
+                          }
+                        }
+                      },
+                      child: Text(
+                        order.clientPhone!,
+                        style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.blue, decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               children: [
@@ -152,11 +179,11 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                     // Coordinates should be in format "lat,lng" 
                     final coords = order.deliveryLocation!.trim();
                     final url = 'https://www.google.com/maps/search/?api=1&query=$coords';
-                    if (await canLaunchUrl(Uri.parse(url))) {
+                    try {
                       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                    } else {
+                    } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Impossible d\'ouvrir Maps.')));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Impossible d\'ouvrir Maps. Vérifiez l\'application.')));
                       }
                     }
                   },
@@ -209,7 +236,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                   )
                 else
                   ElevatedButton.icon(
-                    onPressed: order.status == 'Livré par livreur' || order.status == 'Livraison reçue' ? null : () async {
+                    onPressed: order.status == 'Livré par livreur' ? null : () async {
                       final success = await orderProvider.updateStatus(order.id, 'Livré par livreur');
                       if (success && mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Livraison confirmée !')));
@@ -217,10 +244,10 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de la confirmation')));
                       }
                     },
-                    icon: Icon(order.status == 'Livré par livreur' || order.status == 'Livraison reçue' ? Icons.done : Icons.check),
-                    label: Text(order.status == 'Livré par livreur' ? 'Signalé livré' : order.status == 'Livraison reçue' ? 'Client a reçu' : 'Confirmer livraison'),
+                    icon: Icon(order.status == 'Livré par livreur' ? Icons.done : Icons.check),
+                    label: Text(order.status == 'Livré par livreur' ? 'Livraison effectuée' : 'Confirmer livraison'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (order.status == 'Livré par livreur' || order.status == 'Livraison reçue') ? Colors.grey : Colors.green,
+                      backgroundColor: (order.status == 'Livré par livreur') ? Colors.grey : Colors.green,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),

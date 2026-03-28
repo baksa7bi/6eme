@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'orders_page.dart';
 import 'cafe_detail_page.dart';
 import 'package:store_app/l10n/app_localizations.dart';
+import '../providers/navigation_provider.dart';
 
 class CafesPage extends StatelessWidget {
   final bool isSelectionMode;
@@ -19,6 +20,10 @@ class CafesPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text(l10n.cafes),
         actions: [
           IconButton(

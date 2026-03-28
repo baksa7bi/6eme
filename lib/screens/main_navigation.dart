@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'app_drawer.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import 'home_page.dart';
@@ -26,15 +28,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   bool _isOffline = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-
-  // Global Keys for each tab's navigator
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-  ];
+  // Scaffold key is now stored in NavigationProvider for global access by child pages
 
   @override
   void initState() {
@@ -62,11 +56,11 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  Widget _buildNavigator(int index, int selectedIndex) {
+  Widget _buildNavigator(int index, int selectedIndex, NavigationProvider navProvider) {
     return Offstage(
       offstage: selectedIndex != index,
       child: Navigator(
-        key: _navigatorKeys[index],
+        key: navProvider.navigatorKeys[index],
         onGenerateRoute: (routeSettings) {
           return MaterialPageRoute(
             builder: (context) {
@@ -98,7 +92,8 @@ class _MainNavigationState extends State<MainNavigation> {
       return const DeliveryDashboardPage();
     }
 
-    if (auth.isAuthenticated && (auth.user?.role == 'client') && !auth.user!.isEmailVerified) {
+    // Only block clients who aren't verified. Managers/Admins/etc skip this.
+    if (auth.isAuthenticated && auth.user!.isClient && !auth.user!.isEmailVerified) {
       return const EmailVerificationPage();
     }
 
@@ -110,21 +105,35 @@ class _MainNavigationState extends State<MainNavigation> {
       canPop: false,
       onPopInvoked: (didPop) async {
         if (didPop) return;
-        final isFirstRouteInCurrentTab = !await _navigatorKeys[selectedIndex].currentState!.maybePop();
+        
+        // Always close drawer on back button if open
+        if (navProvider.mainScaffoldKey.currentState?.isDrawerOpen ?? false) {
+          navProvider.mainScaffoldKey.currentState?.closeDrawer();
+          return;
+        }
+
+        final currentNavigator = navProvider.navigatorKeys[selectedIndex].currentState;
+        final isFirstRouteInCurrentTab = !await (currentNavigator?.maybePop() ?? Future.value(false));
+        
         if (isFirstRouteInCurrentTab) {
           if (selectedIndex != 0) {
             navProvider.goToHome();
+          } else {
+            // Exit app if on Home tab root
+            SystemNavigator.pop();
           }
         }
       },
       child: Scaffold(
+        key: navProvider.mainScaffoldKey,
+        drawer: const AppDrawer(),
         body: Stack(
           children: [
-            _buildNavigator(0, selectedIndex),
-            _buildNavigator(1, selectedIndex),
-            _buildNavigator(2, selectedIndex),
-            _buildNavigator(3, selectedIndex),
-            _buildNavigator(4, selectedIndex),
+            _buildNavigator(0, selectedIndex, navProvider),
+            _buildNavigator(1, selectedIndex, navProvider),
+            _buildNavigator(2, selectedIndex, navProvider),
+            _buildNavigator(3, selectedIndex, navProvider),
+            _buildNavigator(4, selectedIndex, navProvider),
           ],
         ),
         bottomNavigationBar: Consumer<CartProvider>(
@@ -132,9 +141,12 @@ class _MainNavigationState extends State<MainNavigation> {
             return BottomNavigationBar(
               currentIndex: selectedIndex,
               onTap: (index) {
+                // Collapse drawer on tab click
+                navProvider.mainScaffoldKey.currentState?.closeDrawer();
+
                 if (selectedIndex == index) {
                   // If clicking the active tab, pop all the way to the first route
-                  _navigatorKeys[index].currentState!.popUntil((route) => route.isFirst);
+                  navProvider.navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
                 } else {
                   navProvider.setSelectedIndex(index);
                 }

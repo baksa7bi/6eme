@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 import 'anniversary_page.dart';
 import 'cafes_page.dart';
 import 'app_drawer.dart';
+import '../providers/navigation_provider.dart';
 
 class ReservationChoicePage extends StatefulWidget {
   const ReservationChoicePage({super.key});
@@ -74,11 +76,11 @@ class _ReservationChoicePageState extends State<ReservationChoicePage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const AppDrawer(),
+      // Drawer is now in MainNavigation
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text('Réservations', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: theme.primaryColor,

@@ -3,16 +3,19 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/favorite_provider.dart';
+import '../providers/cart_provider.dart';
 import 'login_page.dart';
 import 'orders_page.dart';
 import 'my_reservations_page.dart';
 import '../services/api_service.dart';
+import 'main_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'add_product_page.dart';
 import 'add_event_page.dart';
 import 'favorites_page.dart';
 import 'add_manager_page.dart';
+import 'add_delivery_page.dart';
 import 'settings_page.dart';
 import 'coupons_page.dart';
 import 'manager_coupons_page.dart';
@@ -66,7 +69,7 @@ class AppDrawer extends StatelessWidget {
                       auth.user?.email ?? '',
                       style: const TextStyle(color: Colors.white70),
                     ),
-                    if (auth.user != null && !auth.user!.isEmailVerified)
+                    if (auth.user != null && auth.user!.role == 'client' && !auth.user!.isEmailVerified)
                       GestureDetector(
                         onTap: () async {
                           try {
@@ -88,17 +91,9 @@ class AppDrawer extends StatelessWidget {
                           margin: const EdgeInsets.only(top: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.8),
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 14),
-                              SizedBox(width: 4),
-                              Text('Email non vérifié (Renvoyer)', style: TextStyle(color: Colors.white, fontSize: 11)),
-                            ],
-                          ),
+                          )
                         ),
                       ),
                   ],
@@ -141,7 +136,7 @@ class AppDrawer extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -161,32 +156,36 @@ class AppDrawer extends StatelessWidget {
               children: [
                 _buildMenuItem(context, Icons.home, l10n.home, () {
                   Navigator.pop(context); // Close drawer
-                  Provider.of<NavigationProvider>(context, listen: false).goToHome();
+                  final navProvider = Provider.of<NavigationProvider>(context, listen: false);
+                  navProvider.goToHome();
+                  // Also pop to root of home tab for a fresh start
+                  navProvider.navigatorKeys[0].currentState?.popUntil((route) => route.isFirst);
                 }),
                 if (auth.isAuthenticated) ...[
                   if (auth.user?.role == 'client') ...[
                     _buildMenuItem(context, Icons.favorite_border, l10n.favorites, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const FavoritesPage());
                     }),
                     _buildMenuItem(context, Icons.confirmation_num_outlined, l10n.myCoupons, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CouponsPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const CouponsPage());
                     }),
                   ],
                   if (auth.user?.role == 'client' || auth.user?.isManager == true || auth.user?.isAdmin == true) ...[
                     _buildMenuItem(context, Icons.inventory_2_outlined, l10n.myOrders, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const OrdersPage());
                     }),
                     _buildMenuItem(context, Icons.event_note_outlined, l10n.myReservations, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MyReservationsPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const MyReservationsPage());
                     }),
                   ],
                   if (auth.user?.isDelivery == true) ...[
                     _buildMenuItem(context, Icons.delivery_dining, 'Livraisons', () {
                       Navigator.pop(context);
+                      // Use push (fullscreen) for delivery since they don't use bottom nav
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const DeliveryDashboardPage()));
                     }),
                   ],
@@ -195,12 +194,15 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
                 _buildMenuItem(context, Icons.settings_outlined, l10n.settings, () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                  Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const SettingsPage());
                 }),
                 _buildMenuItem(context, Icons.brightness_6, l10n.themeToggle, () {
+                   Navigator.pop(context);
                    context.read<ThemeProvider>().toggleTheme();
                 }),
-                _buildMenuItem(context, Icons.help_outline, l10n.helpSupport, () {}),
+                _buildMenuItem(context, Icons.help_outline, l10n.helpSupport, () {
+                  Navigator.pop(context);
+                }),
 
                 if (auth.isAuthenticated) ...[
                   if ((auth.user?.isContentManager ?? false) || (auth.user?.isManager ?? false)) ...[
@@ -211,38 +213,47 @@ class AppDrawer extends StatelessWidget {
                     ),
                     _buildMenuItem(context, Icons.add_box_outlined, l10n.addProduct, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AddProductPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AddProductPage());
                     }),
                     _buildMenuItem(context, Icons.event, l10n.addEvent, () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
+                      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AddEventPage());
                     }),
                     if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
                       _buildMenuItem(context, Icons.confirmation_number, l10n.activeCoupons, () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagerCouponsPage()));
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const ManagerCouponsPage());
                       }),
                     if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
                       _buildMenuItem(context, Icons.receipt_long, l10n.visitsCommissions, () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminAgencyVisitsPage()));
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AdminAgencyVisitsPage());
+                      }),
+                    if ((auth.user?.isManager ?? false) || (auth.user?.isAdmin ?? false))
+                      _buildMenuItem(context, Icons.delivery_dining, 'Ajouter un Livreur', () {
+                        Navigator.pop(context);
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AddDeliveryPage());
                       }),
                     if (auth.user?.isAdmin ?? false) ...[
                       _buildMenuItem(context, Icons.business, l10n.manageAgencies, () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AgenciesPage()));
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AgenciesPage());
                       }),
                       _buildMenuItem(context, Icons.person_add, l10n.addManager, () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddManagerPage()));
+                        Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const AddManagerPage());
                       }),
                     ],
                   ],
                   const Divider(),
                   _buildMenuItem(context, Icons.logout, l10n.logout, () {
+                    Navigator.pop(context); // Close drawer first
                     auth.logout();
+                    context.read<CartProvider>().clear();
                     context.read<FavoriteProvider>().clearFavorites();
-                    Navigator.pop(context);
+                    final navProvider = context.read<NavigationProvider>();
+                    navProvider.resetAll(); // Reset all tabs to root
+                    navProvider.pushOnCurrentTab(context, const LoginPage()); // Show login nicely in-context
                   }, color: Colors.red),
                 ],
 

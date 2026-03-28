@@ -13,6 +13,7 @@ import 'search_page.dart';
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/home_provider.dart';
+import '../providers/navigation_provider.dart';
 import 'dart:async';
 import 'notifications_page.dart';
 import '../providers/notification_provider.dart';
@@ -58,7 +59,7 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.login)),
       );
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+      Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
       return;
     }
 
@@ -105,7 +106,7 @@ class _HomePageState extends State<HomePage> {
     ];
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const AppDrawer(),
+      // Drawer is now in MainNavigation for consistency
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(135 + MediaQuery.of(context).padding.top),
         child: Container(
@@ -119,7 +120,7 @@ class _HomePageState extends State<HomePage> {
                    IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
                     onPressed: () {
-                      _scaffoldKey.currentState?.openDrawer();
+                      Scaffold.of(context).openDrawer();
                     }, 
                   ),
                   // Logo
@@ -140,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                           return IconButton(
                             onPressed: () {
                               notifProvider.clearUnread();
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage()));
+                              Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const NotificationsPage());
                             },
                             icon: Stack(
                               clipBehavior: Clip.none,
@@ -668,7 +669,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            '15 DH Off on your first order!',
+                            '-20% sur place ou -50% en livraison !',
                             style: TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                         ],

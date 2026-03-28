@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/cafe.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/navigation_provider.dart';
 import 'login_page.dart';
 import '../providers/reservation_provider.dart';
 import '../models/reservation.dart';
@@ -96,12 +97,19 @@ class _ReservationPageState extends State<ReservationPage> {
               height: 55,
               child: ElevatedButton(
                 onPressed: () async {
+                  final auth = context.read<AuthProvider>();
+                  if (auth.isAuthenticated && auth.user?.role != 'client') {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('En tant que personnel, vous ne pouvez pas réserver.')),
+                     );
+                     return;
+                  }
                   if (!auth.isAuthenticated) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                    Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
                     return;
                   }
 
-                  if (!auth.user!.isEmailVerified) {
+                  if (auth.user!.role == 'client' && !auth.user!.isEmailVerified) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Veuillez vérifier votre adresse e-mail pour effectuer une réservation.'),

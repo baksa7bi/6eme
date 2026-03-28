@@ -15,6 +15,8 @@ class OrderItem {
   final String? agencyId;
   final double? commissionAmount;
   final String? deliveryLocation;
+  final String? clientPhone;
+  final String? clientName;
 
   OrderItem({
     required this.id,
@@ -28,6 +30,8 @@ class OrderItem {
     this.agencyId,
     this.commissionAmount,
     this.deliveryLocation,
+    this.clientPhone,
+    this.clientName,
   });
 
   OrderItem copyWith({
@@ -42,6 +46,8 @@ class OrderItem {
     String? agencyId,
     double? commissionAmount,
     String? deliveryLocation,
+    String? clientPhone,
+    String? clientName,
   }) {
     return OrderItem(
       id: id ?? this.id,
@@ -55,6 +61,8 @@ class OrderItem {
       agencyId: agencyId ?? this.agencyId,
       commissionAmount: commissionAmount ?? this.commissionAmount,
       deliveryLocation: deliveryLocation ?? this.deliveryLocation,
+      clientPhone: clientPhone ?? this.clientPhone,
+      clientName: clientName ?? this.clientName,
     );
   }
 
@@ -90,6 +98,8 @@ class OrderItem {
       agencyId: json['agency_id']?.toString(),
       commissionAmount: double.tryParse(json['commission_amount']?.toString() ?? '0'),
       deliveryLocation: json['delivery_location'],
+      clientPhone: json['user']?['phone']?.toString(),
+      clientName: json['user']?['name']?.toString(),
     );
   }
 }

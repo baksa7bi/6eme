@@ -102,6 +102,9 @@ class _AddManagerPageState extends State<AddManagerPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Champ requis';
                   if (value.length < 8) return 'Minimum 8 caractères';
+                  if (!value.contains(RegExp(r'[a-zA-Z]')) || !value.contains(RegExp(r'[0-9]'))) {
+                    return 'Doit contenir une lettre et un chiffre';
+                  }
                   return null;
                 },
               ),

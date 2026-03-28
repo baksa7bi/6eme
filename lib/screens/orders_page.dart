@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/order_provider.dart';
 import '../models/order.dart';
 import '../providers/auth_provider.dart';
+import '../providers/navigation_provider.dart';
 import 'app_drawer.dart';
 
 class OrdersPage extends StatefulWidget {
@@ -41,12 +43,10 @@ class _OrdersPageState extends State<OrdersPage> {
     final orders = orderProvider.orders;
 
     return Scaffold(
-      key: scaffoldKey,
-      drawer: const AppDrawer(),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu),
-          onPressed: () => scaffoldKey.currentState?.openDrawer(),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(isManager ? 'Gestion Commandes' : 'Mes Commandes'),
         bottom: PreferredSize(
@@ -173,7 +173,19 @@ class _OrdersPageState extends State<OrdersPage> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isManager) Text('Client ID: ${order.userId}'),
+            if (isManager) ...[
+              Text('Client: ${order.clientName ?? 'Inconnu'}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+              if (order.clientPhone != null) 
+                GestureDetector(
+                  onTap: () async {
+                    final Uri url = Uri.parse('tel:${order.clientPhone}');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    }
+                  },
+                  child: Text('📞 ${order.clientPhone}', style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                ),
+            ],
             Text('${DateFormat('dd/MM/yyyy HH:mm').format(order.dateTime)} • ${order.totalAmount} DH'),
             Text(order.type == OrderType.delivery ? '🛵 Livraison' : '🍽️ Sur place', 
                  style: TextStyle(fontSize: 10, color: order.type == OrderType.delivery ? Colors.blue : Colors.orange)),
@@ -234,17 +246,8 @@ class _OrdersPageState extends State<OrdersPage> {
                     ],
                   ),
                 ],
-                if (!isManager && order.status == 'Livré par livreur') ...[
-                   const Divider(),
-                   SizedBox(
-                     width: double.infinity,
-                     child: ElevatedButton(
-                        onPressed: () => Provider.of<OrderProvider>(context, listen: false).updateStatus(order.id, 'Livraison reçue'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                        child: const Text('Confirmer réception'),
-                      ),
-                   ),
-                ],
+                // Order is confirmed by delivery staff, no client confirmation needed
+
               ],
             ),
           ),

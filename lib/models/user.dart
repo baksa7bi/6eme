@@ -49,5 +49,6 @@ class User {
   bool get isManager => role == 'manager';
   bool get isDelivery => role == 'delivery';
   bool get isContentManager => role == 'content_manager' || role == 'admin';
+  bool get isClient => role == 'client';
   bool get isEmailVerified => emailVerifiedAt != null;
 }

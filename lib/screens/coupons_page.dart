@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'app_drawer.dart';
 import 'login_page.dart';
+import '../providers/navigation_provider.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 
 class CouponsPage extends StatefulWidget {
@@ -224,12 +225,10 @@ class _CouponsPageState extends State<CouponsPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      key: _scaffoldKey,
-      drawer: const AppDrawer(),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(l10n.myCoupons, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).primaryColor,
@@ -350,7 +349,7 @@ class _CouponsPageState extends State<CouponsPage> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+              Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepOrange,

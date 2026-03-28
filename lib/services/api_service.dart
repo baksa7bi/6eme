@@ -137,6 +137,21 @@ class ApiService {
     return response.statusCode == 201;
   }
 
+  static Future<bool> addDelivery(String name, String email, String password, String phone, String cafeId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/admin/delivery'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'cafe_id': cafeId,
+      }),
+    );
+    return response.statusCode == 201;
+  }
+
   static Future<List<Map<String, dynamic>>> getNotifications() async {
     final response = await http.get(Uri.parse('$baseUrl/user/notifications'), headers: _headers);
     if (response.statusCode == 200) {

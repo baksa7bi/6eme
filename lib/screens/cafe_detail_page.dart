@@ -9,6 +9,7 @@ import '../services/api_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
+import '../providers/navigation_provider.dart';
 import 'login_page.dart';
 import 'reservation_page.dart';
 import 'product_detail_page.dart';
@@ -46,7 +47,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
     }
@@ -137,6 +141,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
+                        final auth = context.read<AuthProvider>();
+                        if (auth.isAuthenticated && auth.user?.role != 'client') {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('En tant que personnel, vous ne pouvez pas réserver.'), duration: Duration(seconds: 2)));
+                          return;
+                        }
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -295,15 +304,19 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                         onPressed: () {
                           if (!item.available) return;
                           if (!auth.isAuthenticated) {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                            Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
                             return;
                           }
-                          if (!auth.user!.isEmailVerified) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Veuillez vérifier votre email')));
+                          if (auth.user?.role != 'client') {
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('En tant que personnel, vous ne pouvez pas commander.'), duration: Duration(seconds: 2)));
+                             return;
+                          }
+                          if (auth.user!.role == 'client' && !auth.user!.isEmailVerified) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Veuillez vérifier votre email'), duration: Duration(seconds: 2)));
                             return;
                           }
                           context.read<CartProvider>().addItem(item);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} ajouté au panier')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} ajouté au panier'), duration: const Duration(seconds: 2)));
                         },
                       ),
                       IconButton(
@@ -317,12 +330,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                           } else {
                             auth.setPendingFavorite(item);
                             ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(content: Text(l10n.login)),
+                               SnackBar(content: Text(l10n.login), duration: const Duration(seconds: 2)),
                             );
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
-                            );
+                            Provider.of<NavigationProvider>(context, listen: false).pushOnCurrentTab(context, const LoginPage());
                           }
                         },
                       ),

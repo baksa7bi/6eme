@@ -10,6 +10,8 @@ class Reservation {
   final String type; // 'table', 'birthday'
   final String status; // pending, confirmed, cancelled
   final String? paymentIntentId;
+  final String? clientName;
+  final String? clientPhone;
 
   Reservation({
     required this.id,
@@ -23,6 +25,8 @@ class Reservation {
     this.type = 'table',
     this.status = 'pending',
     this.paymentIntentId,
+    this.clientName,
+    this.clientPhone,
   });
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,8 @@ class Reservation {
       type: json['type'] ?? 'table',
       status: json['status'] ?? 'pending',
       paymentIntentId: json['payment_intent_id'] ?? json['paymentIntentId'],
+      clientName: json['user']?['name']?.toString(),
+      clientPhone: json['user']?['phone']?.toString(),
     );
   }
 

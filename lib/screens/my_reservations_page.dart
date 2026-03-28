@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/reservation_provider.dart';
 import '../models/reservation.dart';
 import '../providers/auth_provider.dart';
@@ -132,7 +133,19 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isManager) Text('Client: ${res.userId}'), // Should ideally show name
+            if (isManager) ...[
+               Text('Client: ${res.clientName ?? 'Inconnu'}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+               if (res.clientPhone != null) 
+                 GestureDetector(
+                   onTap: () async {
+                     final Uri url = Uri.parse('tel:${res.clientPhone}');
+                     if (await canLaunchUrl(url)) {
+                       await launchUrl(url);
+                     }
+                   },
+                   child: Text('📞 ${res.clientPhone}', style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                 ),
+            ],
             Text('Table pour ${res.numberOfPeople} personnes'),
             const SizedBox(height: 4),
             Text('📅 ${DateFormat('dd/MM/yyyy').format(res.dateTime)} à ${DateFormat('HH:mm').format(res.dateTime)}'),
@@ -178,6 +191,15 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
             _detailRow(Icons.calendar_today, 'Date', DateFormat('dd/MM/yyyy').format(res.dateTime)),
             _detailRow(Icons.access_time, 'Heure', DateFormat('HH:mm').format(res.dateTime)),
             _detailRow(Icons.info_outline, 'Statut', res.status.toUpperCase()),
+            const Divider(),
+            if (res.clientName != null) _detailRow(Icons.person, 'Client', res.clientName!),
+            if (res.clientPhone != null) _detailRow(Icons.phone, 'Téléphone', res.clientPhone!, 
+              onTap: () async {
+                final Uri url = Uri.parse('tel:${res.clientPhone}');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                }
+              }),
             if (res.specialRequests != null && res.specialRequests!.isNotEmpty) ...[
               const Divider(),
               const Text('Demandes spéciales :', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -196,16 +218,20 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(IconData icon, String label, String value, {VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: Colors.grey),
-          const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.grey),
+            const SizedBox(width: 8),
+            Text('$label: ', style: const TextStyle(color: Colors.grey)),
+            Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: onTap != null ? Colors.blue : null))),
+            if (onTap != null) const Icon(Icons.phone, size: 14, color: Colors.blue),
+          ],
+        ),
       ),
     );
   }

@@ -125,11 +125,14 @@ class _SettingsPageState extends State<SettingsPage> {
                         );
                         return;
                       }
-                      if (newCtrl.text.length < 6) {
+                      final password = newCtrl.text;
+                      final hasLetter = password.contains(RegExp(r'[a-zA-Z]'));
+                      final hasNumber = password.contains(RegExp(r'[0-9]'));
+                      if (password.length < 8 || !hasLetter || !hasNumber) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text(
-                                  'Le nouveau mot de passe doit contenir au moins 6 caractères')),
+                                  'Le nouveau mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre.')),
                         );
                         return;
                       }
@@ -298,11 +301,14 @@ class _SettingsPageState extends State<SettingsPage> {
                         );
                         return;
                       }
-                      if (newCtrl.text.length < 6) {
+                      final password = newCtrl.text;
+                      final hasLetter = password.contains(RegExp(r'[a-zA-Z]'));
+                      final hasNumber = password.contains(RegExp(r'[0-9]'));
+                      if (password.length < 8 || !hasLetter || !hasNumber) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text(
-                                  'Le nouveau mot de passe doit contenir au moins 6 caractères')),
+                                  'Le nouveau mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre.')),
                         );
                         return;
                       }

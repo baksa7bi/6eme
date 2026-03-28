@@ -28,6 +28,21 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    final password = _passwordController.text;
+    final hasLetter = password.contains(RegExp(r'[a-zA-Z]'));
+    final hasNumber = password.contains(RegExp(r'[0-9]'));
+    final isLongEnough = password.length >= 8;
+
+    if (!isLongEnough || !hasLetter || !hasNumber) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     try {
       final success = await context.read<AuthProvider>().register(
         _nameController.text,

@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/agency_provider.dart';
 import '../providers/favorite_provider.dart';
 import 'register_page.dart';
+import 'main_navigation.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -72,7 +73,11 @@ class _LoginPageState extends State<LoginPage> {
                                   const SnackBar(content: Text('Succès !')),
                                 );
                               }
-                              Navigator.pop(context); 
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context); 
+                              } else {
+                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainNavigation()), (route) => false);
+                              }
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
