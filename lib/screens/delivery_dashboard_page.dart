@@ -57,7 +57,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
             child: Row(
               children: [
                 _filterChip('all', 'Tous'),
-                _filterChip('En attente', 'Nouvelles (En attente)'),
+                _filterChip('Confirmée', 'Nouvelles (Confirmées)'),
                 _filterChip('En route', 'Mes Trajets (En route)'),
                 _filterChip('Livré par livreur', 'Livrées'),
               ],
@@ -175,7 +175,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                 const Icon(Icons.location_on_outlined, size: 20, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(child: InkWell(
-                  onTap: (order.deliveryLocation == null || order.status == 'En attente') ? null : () async {
+                  onTap: (order.deliveryLocation == null || order.status == 'Confirmée') ? null : () async {
                     // Coordinates should be in format "lat,lng" 
                     final coords = order.deliveryLocation!.trim();
                     final url = 'https://www.google.com/maps/search/?api=1&query=$coords';
@@ -188,15 +188,15 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                     }
                   },
                   child: Text(
-                    order.status == 'En attente'
+                    order.status == 'Confirmée'
                       ? 'Acceptez la commande pour voir l\'adresse'
                       : (order.deliveryLocation != null && order.deliveryLocation!.isNotEmpty 
                           ? '📍 Client: ${order.deliveryLocation}'
                           : 'Adresse non spécifiée'), 
                     style: TextStyle(
                       fontWeight: FontWeight.bold, 
-                      color: (order.deliveryLocation != null && order.status != 'En attente') ? Colors.blue : Colors.grey, 
-                      decoration: (order.deliveryLocation != null && order.status != 'En attente') ? TextDecoration.underline : null
+                      color: (order.deliveryLocation != null && order.status != 'Confirmée') ? Colors.blue : Colors.grey, 
+                      decoration: (order.deliveryLocation != null && order.status != 'Confirmée') ? TextDecoration.underline : null
                     ),
                   ),
                 )),
@@ -222,7 +222,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
               children: [
                 Text('Total: ${order.totalAmount} DH', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.orange)),
                 // Render different buttons based on state
-                if (order.status == 'En attente')
+                if (order.status == 'Confirmée')
                   ElevatedButton.icon(
                     onPressed: () async {
                       final success = await orderProvider.updateStatus(order.id, 'En route');
@@ -263,6 +263,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
   Widget _statusBadge(String status) {
     Color color = Colors.grey;
     if (status == 'En attente') color = Colors.orange;
+    if (status == 'Confirmée') color = Colors.teal;
     if (status == 'En route') color = Colors.blueAccent;
     if (status == 'Livré par livreur') color = Colors.green;
     if (status == 'Livraison reçue') color = Colors.blue;

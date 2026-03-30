@@ -21,8 +21,8 @@ class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
-  // static const String baseUrl = 'https://api.sfw-digital.com/api'; 
-  static const String baseUrl = 'http://192.168.100.40:8000/api'; 
+  static const String baseUrl = 'https://api.sfw-digital.com/api'; 
+  // static const String baseUrl = 'http://192.168.100.40:8000/api'; 
   static String get storageUrl {
     if (baseUrl.endsWith('/api')) {
       return '${baseUrl.substring(0, baseUrl.length - 4)}/storage';
