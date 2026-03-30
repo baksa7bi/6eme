@@ -94,7 +94,12 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () => _showForgotPasswordDialog(context),
+              child: const Text('Mot de passe oublié ?', style: TextStyle(color: Colors.grey)),
+            ),
+            const SizedBox(height: 10),
             const Row(
               children: [
                 Expanded(child: Divider()),
@@ -106,30 +111,6 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
             const SizedBox(height: 20),
-            // Social Login Buttons
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     _SocialButton(
-            //       icon: FontAwesomeIcons.google,
-            //       color: Colors.red,
-            //       onPressed: () => context.read<AuthProvider>().signInWithGoogle(
-            //         agencyProvider: context.read<AgencyProvider>()
-            //       ).then((success) {
-            //         if (success && mounted) Navigator.pop(context);
-            //       }),
-            //     ),
-            //     _SocialButton(
-            //       icon: FontAwesomeIcons.facebookF,
-            //       color: Colors.blue[900]!,
-            //       onPressed: () => context.read<AuthProvider>().signInWithFacebook(
-            //         agencyProvider: context.read<AgencyProvider>()
-            //       ).then((success) {
-            //         if (success && mounted) Navigator.pop(context);
-            //       }),
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 24),
             TextButton(
               onPressed: () {
@@ -139,6 +120,136 @@ class _LoginPageState extends State<LoginPage> {
                 );
               },
               child: const Text('Pas de compte ? S\'inscrire ici'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final emailController = TextEditingController();
+    bool isRequesting = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Réinitialisation'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Entrez votre email pour recevoir un code de réinitialisation.'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: isRequesting ? null : () async {
+                setDialogState(() => isRequesting = true);
+                try {
+                  final res = await context.read<AuthProvider>().forgotPassword(emailController.text);
+                  if (mounted) {
+                    Navigator.pop(context);
+                    if (res.containsKey('debug_token')) {
+                       _showResetPasswordDialog(context, emailController.text, res['debug_token']);
+                    } else {
+                       _showResetPasswordDialog(context, emailController.text, null);
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+                  }
+                } finally {
+                  setDialogState(() => isRequesting = false);
+                }
+              },
+              child: isRequesting ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Suivant'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showResetPasswordDialog(BuildContext context, String email, String? debugToken) {
+    final codeController = TextEditingController(text: debugToken);
+    final passwordController = TextEditingController();
+    final confirmController = TextEditingController();
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Nouveau mot de passe'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (debugToken != null)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    color: Colors.blue[50],
+                    child: Text('Debug: Votre code est $debugToken', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                const Text('Entrez le code et votre nouveau mot de passe.'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: codeController,
+                  decoration: const InputDecoration(labelText: 'Code de réinitialisation', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Nouveau mot de passe', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: confirmController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Confirmer le mot de passe', border: OutlineInputBorder()),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: isResetting ? null : () async {
+                if (passwordController.text != confirmController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les mots de passe ne correspondent pas')));
+                  return;
+                }
+                setDialogState(() => isResetting = true);
+                try {
+                  await context.read<AuthProvider>().resetPassword(
+                    email: email,
+                    token: codeController.text,
+                    password: passwordController.text,
+                    passwordConfirmation: confirmController.text,
+                  );
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe réinitialisé avec succès !'), backgroundColor: Colors.green));
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+                  }
+                } finally {
+                  setDialogState(() => isResetting = false);
+                }
+              },
+              child: isResetting ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Réinitialiser'),
             ),
           ],
         ),

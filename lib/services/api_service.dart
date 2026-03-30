@@ -11,6 +11,13 @@ import '../models/order.dart';
 import '../models/reservation.dart';
 
 class ApiService {
+  static http.Client? _client;
+
+  static http.Client get _httpClient => _client ?? http.Client();
+
+  static void setMockClient(http.Client client) {
+    _client = client;
+  }
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
@@ -47,7 +54,7 @@ class ApiService {
 
   // Auth
   static Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
+    final response = await _httpClient.post(
       Uri.parse('$baseUrl/login'),
       headers: _headers,
       body: jsonEncode({'email': email, 'password': password}),
@@ -78,8 +85,36 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  static Future<Map<String, dynamic>> register(String name, String email, String password, {String? phone, String? address}) async {
+  static Future<Map<String, dynamic>> forgotPassword(String email) async {
+    final response = await _httpClient.post(
+      Uri.parse('$baseUrl/forgot-password'),
+      headers: _headers,
+      body: jsonEncode({'email': email}),
+    );
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
     final response = await http.post(
+      Uri.parse('$baseUrl/reset-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'email': email,
+        'token': token,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> register(String name, String email, String password, {String? phone, String? address}) async {
+    final response = await _httpClient.post(
       Uri.parse('$baseUrl/register'),
       headers: _headers,
       body: jsonEncode({
@@ -114,7 +149,7 @@ class ApiService {
     if (address != null && address.isNotEmpty) body['address'] = address;
     if (password != null && password.isNotEmpty) body['password'] = password;
 
-    final response = await http.post(
+    final response = await _httpClient.post(
       Uri.parse('$baseUrl/profile'),
       headers: _headers,
       body: jsonEncode(body),

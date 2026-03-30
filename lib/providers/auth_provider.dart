@@ -228,6 +228,46 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await ApiService.forgotPassword(email);
+      _isLoading = false;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await ApiService.resetPassword(
+        email: email,
+        token: token,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   void logout() {
     _user = null;
     _token = null;

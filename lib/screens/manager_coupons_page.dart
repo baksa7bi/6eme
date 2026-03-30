@@ -263,15 +263,38 @@ class _ManagerCouponsPageState extends State<ManagerCouponsPage> {
                 child: Column(
                   children: [
                     if (req['image_path'] != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: ApiService.getFullImageUrl(req['image_path']),
-                          height: 250,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Scaffold(
+                                backgroundColor: Colors.black,
+                                appBar: AppBar(backgroundColor: Colors.black, iconTheme: const IconThemeData(color: Colors.white)),
+                                body: Center(
+                                  child: InteractiveViewer(
+                                    child: CachedNetworkImage(
+                                      imageUrl: ApiService.getFullImageUrl(req['image_path']),
+                                      fit: BoxFit.contain,
+                                      placeholder: (context, url) => const CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 80, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: CachedNetworkImage(
+                            imageUrl: ApiService.getFullImageUrl(req['image_path']),
+                            height: 250,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                          ),
                         ),
                       ),
                     if (isPending) ...[

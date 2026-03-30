@@ -45,6 +45,10 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Nous avons besoin de votre position pour vous localiser sur la carte lors de la livraison.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>Nous avons besoin de votre position pour vous localiser sur la carte lors de la livraison.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>Scan cards</string>
 		<key>UIStatusBarHidden</key>

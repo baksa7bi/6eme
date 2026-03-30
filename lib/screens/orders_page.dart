@@ -7,6 +7,7 @@ import '../models/order.dart';
 import '../providers/auth_provider.dart';
 import '../providers/navigation_provider.dart';
 import 'app_drawer.dart';
+import '../services/api_service.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -49,6 +50,14 @@ class _OrdersPageState extends State<OrdersPage> {
           onPressed: () => Provider.of<NavigationProvider>(context, listen: false).mainScaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(isManager ? 'Gestion Commandes' : 'Mes Commandes'),
+        actions: [
+          if (isManager)
+            IconButton(
+              icon: const Icon(Icons.file_download),
+              tooltip: 'Exporter en Excel (mois en cours)',
+              onPressed: () => _exportToExcel(),
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(isManager ? 100 : 50),
           child: Column(
@@ -228,7 +237,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     Text('${order.totalAmount} DH', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ],
                 ),
-                if (isManager && order.status == 'En attente' && order.type != OrderType.delivery) ...[
+                if (isManager && order.status == 'En attente') ...[
                   const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -264,5 +273,40 @@ class _OrdersPageState extends State<OrdersPage> {
     if (status == 'Livraison reçue') return Colors.blue;
     if (status == 'Annulée') return Colors.red;
     return Colors.grey;
+  }
+
+  void _exportToExcel() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final now = DateTime.now();
+    
+    // Parse the base URL to extract host/port/path
+    final baseUri = Uri.parse(ApiService.baseUrl);
+    
+    final downloadUrl = Uri(
+      scheme: baseUri.scheme,
+      host: baseUri.host,
+      port: baseUri.port,
+      path: '${baseUri.path}/orders/export',
+      queryParameters: {
+        'month': now.month.toString(),
+        'year': now.year.toString(),
+        'token': auth.token ?? '',
+      },
+    );
+
+    debugPrint('Export URL: $downloadUrl');
+
+    try {
+      if (await canLaunchUrl(downloadUrl)) {
+        await launchUrl(downloadUrl, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch URL';
+      }
+    } catch (e) {
+      debugPrint('Export Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      }
+    }
   }
 }
