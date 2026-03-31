@@ -537,7 +537,7 @@ class _CartPageState extends State<CartPage> {
                 if (_locationController.text.trim().isEmpty) return;
                 _deliveryLocation = _locationController.text;
                 Navigator.pop(context); // Close dialog
-                _processOrders(auth, cart, itemsByCafe, 'delivery');
+                _showPaymentMethodDialog(auth, cart, itemsByCafe);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
               child: const Text('CONFIRMER'),
@@ -548,7 +548,38 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Future<void> _processOrders(AuthProvider auth, CartProvider cart, Map<String, List<CartItem>> itemsByCafe, String type) async {
+  void _showPaymentMethodDialog(AuthProvider auth, CartProvider cart, Map<String, List<CartItem>> itemsByCafe) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Méthode de paiement'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.money, color: Colors.green),
+              title: const Text('Paiement à la livraison'),
+              onTap: () {
+                Navigator.pop(context);
+                _processOrders(auth, cart, itemsByCafe, 'delivery', 'cash_on_delivery');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.credit_card, color: Colors.blue),
+              title: const Text('Paiement en ligne'),
+              onTap: () {
+                Navigator.pop(context);
+                _processOrders(auth, cart, itemsByCafe, 'delivery', 'online');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _processOrders(AuthProvider auth, CartProvider cart, Map<String, List<CartItem>> itemsByCafe, String type, [String paymentMethod = 'cash_on_delivery']) async {
     // Show loading
     showDialog(
       context: context, 
@@ -574,6 +605,7 @@ class _CartPageState extends State<CartPage> {
           'total_amount': cafeSubtotal - (isFirst ? _totalDiscount : 0),
           'type': type,
           'delivery_location': type == 'delivery' ? _deliveryLocation : null,
+          'payment_method': paymentMethod,
           'status': 'En attente',
           'coupon_codes': isFirst ? couponCodes : [],
           'items': cafeItems.map((item) => {

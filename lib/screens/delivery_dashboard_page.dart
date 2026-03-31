@@ -57,9 +57,11 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
             child: Row(
               children: [
                 _filterChip('all', 'Tous'),
-                _filterChip('Confirmée', 'Nouvelles (Confirmées)'),
-                _filterChip('En route', 'Mes Trajets (En route)'),
-                _filterChip('Livré par livreur', 'Livrées'),
+                _filterChip('Confirmée', 'Acceptation'),
+                _filterChip('Prête', 'Prêtes ✅'),
+                _filterChip('En route', 'En route 🛵'),
+                _filterChip('Arrivée', 'À destination 📍'),
+                _filterChip('Livrée', 'Livrées'),
               ],
             ),
           ),
@@ -74,7 +76,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     final order = orders[index];
-                    return _buildDeliveryCard(order, orderProvider);
+                    return _buildDeliveryCard(order, orderProvider, auth);
                   },
                 ),
     );
@@ -113,7 +115,7 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
     );
   }
 
-  Widget _buildDeliveryCard(OrderItem order, OrderProvider orderProvider) {
+  Widget _buildDeliveryCard(OrderItem order, OrderProvider orderProvider, AuthProvider auth) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -221,36 +223,70 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Total: ${order.totalAmount} DH', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.orange)),
-                // Render different buttons based on state
-                if (order.status == 'Confirmée')
+                
+                // --- DYNAMIC ACTIONS: ONLY READY ORDERS CAN BE TAKEN ---
+                
+                // 1. Order is READY but no one took it yet (Available pool)
+                if (order.deliveryId == null && order.status == 'Prête')
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final success = await orderProvider.takeOrder(order.id);
+                      if (success && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Commande assignée ! 🛵💨')));
+                      }
+                    },
+                    icon: const Icon(Icons.delivery_dining),
+                    label: const Text('Prendre & Partir'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
+                  )
+                
+                // 2. Assigned to ME AND I can start (already READY)
+                else if (order.deliveryId == auth.user?.id.toString() && order.status == 'Prête')
                   ElevatedButton.icon(
                     onPressed: () async {
                       final success = await orderProvider.updateStatus(order.id, 'En route');
                       if (success && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Commande prise en charge !')));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Course démarrée ! 🛵💨')));
                       }
                     },
-                    icon: const Icon(Icons.delivery_dining),
-                    label: const Text('Prendre la commande'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Démarrer la course'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
                   )
-                else
+                
+                // 3. Trip in progress
+                else if (order.status == 'En route')
                   ElevatedButton.icon(
-                    onPressed: order.status == 'Livré par livreur' ? null : () async {
-                      final success = await orderProvider.updateStatus(order.id, 'Livré par livreur');
+                    onPressed: () async {
+                      final success = await orderProvider.updateStatus(order.id, 'Arrivée');
                       if (success && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Livraison confirmée !')));
-                      } else if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de la confirmation')));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Arrivée sur place 📍')));
                       }
                     },
-                    icon: Icon(order.status == 'Livré par livreur' ? Icons.done : Icons.check),
-                    label: Text(order.status == 'Livré par livreur' ? 'Livraison effectuée' : 'Confirmer livraison'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: (order.status == 'Livré par livreur') ? Colors.grey : Colors.green,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
+                    icon: const Icon(Icons.location_on),
+                    label: const Text('Arrivé sur place'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                  )
+                else if (order.status == 'Arrivée')
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => _showCancelDialog(order, orderProvider),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                        child: const Text('Annuler'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final success = await orderProvider.updateStatus(order.id, 'Livrée');
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Livrée ! 🏁')));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                        child: const Text('Livrée'),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -260,13 +296,47 @@ class _DeliveryDashboardPageState extends State<DeliveryDashboardPage> {
     );
   }
 
+  void _showCancelDialog(OrderItem order, OrderProvider provider) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Annuler la livraison'),
+        content: TextField(
+          controller: reasonController,
+          decoration: const InputDecoration(
+            labelText: 'Raison de l\'annulation',
+            hintText: 'ex: Le client ne répond pas',
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer')),
+          ElevatedButton(
+            onPressed: () async {
+              if (reasonController.text.isEmpty) return;
+              final success = await provider.updateStatus(order.id, 'Annulée', reason: reasonController.text);
+              if (success && mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Livraison annulée.')));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Confirmer l\'annulation'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _statusBadge(String status) {
     Color color = Colors.grey;
     if (status == 'En attente') color = Colors.orange;
     if (status == 'Confirmée') color = Colors.teal;
+    if (status == 'Prête') color = Colors.greenAccent[700]!;
     if (status == 'En route') color = Colors.blueAccent;
-    if (status == 'Livré par livreur') color = Colors.green;
-    if (status == 'Livraison reçue') color = Colors.blue;
+    if (status == 'Arrivée') color = Colors.indigo;
+    if (status == 'Livrée') color = Colors.green;
     if (status == 'Annulée') color = Colors.red;
 
     return Container(

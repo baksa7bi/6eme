@@ -37,37 +37,61 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
     final isManager = auth.user?.isManager == true || auth.user?.isAdmin == true;
     final reservations = reservationProvider.reservations;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isManager ? 'Gestion Réservations' : 'Mes Réservations'),
-        bottom: isManager ? PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _filterChip('all', 'Toutes'),
-                _filterChip('active', 'Actives'),
-                _filterChip('history', 'Historique'),
-                _filterChip('cancelled', 'Annulés'),
-              ],
-            ),
+    final tableReservations = reservations.where((r) => r.type == 'table').toList();
+    final anniversaryReservations = reservations.where((r) => r.type == 'birthday' || r.type == 'anniversaire').toList();
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isManager ? 'Gestion Réservations' : 'Mes Réservations'),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'Tables', icon: Icon(Icons.restaurant)),
+              Tab(text: 'Anniversaires', icon: Icon(Icons.cake)),
+            ],
           ),
-        ) : null,
-      ),
-      body: reservationProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : reservations.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: reservations.length,
-                  itemBuilder: (context, index) {
-                    final res = reservations[index];
-                    return _buildReservationCard(context, res, isManager);
-                  },
+        ),
+        body: Column(
+          children: [
+            if (isManager) 
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    _filterChip('all', 'Toutes'),
+                    _filterChip('active', 'Actives'),
+                    _filterChip('history', 'Historique'),
+                    _filterChip('cancelled', 'Annulés'),
+                  ],
                 ),
+              ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildReservationList(context, tableReservations, isManager, reservationProvider.isLoading),
+                  _buildReservationList(context, anniversaryReservations, isManager, reservationProvider.isLoading),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReservationList(BuildContext context, List<Reservation> list, bool isManager, bool isLoading) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (list.isEmpty) return _buildEmptyState();
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final res = list[index];
+        return _buildReservationCard(context, res, isManager);
+      },
     );
   }
 
@@ -157,7 +181,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
             ),
           ],
         ),
-        onTap: () => _showReservationDetails(context, res),
+        onTap: () => _showReservationDetails(context, res, isManager),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       ),
     );
@@ -178,7 +202,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
     );
   }
 
-  void _showReservationDetails(BuildContext context, Reservation res) {
+  void _showReservationDetails(BuildContext context, Reservation res, bool isManager) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -209,6 +233,37 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
           ],
         ),
         actions: [
+          if (isManager && res.status == 'pending') ...[
+            TextButton(
+              onPressed: () async {
+                final success = await context.read<ReservationProvider>().updateStatus(
+                  int.parse(res.id), 
+                  'cancelled',
+                  currentFilterStatus: _selectedStatus == 'all' ? null : _selectedStatus,
+                );
+                if (success && context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Réservation annulée'), backgroundColor: Colors.red));
+                }
+              },
+              child: const Text('ANNULER', style: TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final success = await context.read<ReservationProvider>().updateStatus(
+                  int.parse(res.id), 
+                  'confirmed',
+                  currentFilterStatus: _selectedStatus == 'all' ? null : _selectedStatus,
+                );
+                if (success && context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Réservation confirmée'), backgroundColor: Colors.green));
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+              child: const Text('CONFIRMER'),
+            ),
+          ],
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Fermer'),

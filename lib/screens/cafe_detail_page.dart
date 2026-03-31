@@ -63,10 +63,18 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 
   List<MenuItem> get _filteredItems {
+    final auth = context.read<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
     final category = _selectedCategory ?? l10n.all;
-    if (category == l10n.all) return _menuItems;
-    return _menuItems.where((item) => item.category == category).toList();
+    
+    final canSeeUnavailable = auth.user?.isAdmin == true || auth.user?.isContentManager == true || auth.user?.isManager == true;
+    var list = _menuItems;
+    if (!canSeeUnavailable) {
+      list = list.where((item) => item.available).toList();
+    }
+    
+    if (category == l10n.all) return list;
+    return list.where((item) => item.category == category).toList();
   }
 
   @override
@@ -141,6 +149,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
+                        if (widget.cafe.reservationsBlocked) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les réservations sont actuellement suspendues pour cet établissement.'), backgroundColor: Colors.orange));
+                          return;
+                        }
                         final auth = context.read<AuthProvider>();
                         if (auth.isAuthenticated && auth.user?.role != 'client') {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('En tant que personnel, vous ne pouvez pas réserver.'), duration: Duration(seconds: 2)));
@@ -161,6 +173,37 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                         foregroundColor: Colors.white,
                       ),
                     ),
+                  ),
+                  
+                  Consumer<AuthProvider>(
+                    builder: (context, auth, _) {
+                      if (auth.user?.isAdmin == true || (auth.user?.isManager == true && auth.user?.cafeId.toString() == widget.cafe.id.toString())) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final newStatus = !widget.cafe.reservationsBlocked;
+                                final success = await ApiService.toggleReservationsBlock(widget.cafe.id, newStatus);
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Réservations ${newStatus ? "bloquées" : "débloquées"}')));
+                                  setState(() {
+                                    widget.cafe.reservationsBlocked = newStatus;
+                                  });
+                                }
+                              },
+                              icon: Icon(widget.cafe.reservationsBlocked ? Icons.lock_open : Icons.lock),
+                              label: Text(widget.cafe.reservationsBlocked ? 'Débloquer les réservations' : 'Bloquer les réservations'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: widget.cafe.reservationsBlocked ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox();
+                    },
                   ),
                   
                   const SizedBox(height: 24),
@@ -316,7 +359,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                             return;
                           }
                           context.read<CartProvider>().addItem(item);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} ajouté au panier'), duration: const Duration(seconds: 2)));
+                          
                         },
                       ),
                       IconButton(
@@ -355,6 +398,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     final categoryController = TextEditingController(text: item.category);
     File? pickedImage;
     bool isSaving = false;
+    bool isAvailable = item.available;
     final l10n = AppLocalizations.of(context)!;
 
     showDialog(
@@ -371,6 +415,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   TextField(controller: descController, decoration: const InputDecoration(labelText: 'Description')),
                   TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Prix (DH)'), keyboardType: TextInputType.number),
                   TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Catégorie')),
+                  SwitchListTile(
+                    title: const Text('Disponible (Rupture de stock)'),
+                    value: isAvailable,
+                    onChanged: (val) => setDialogState(() => isAvailable = val),
+                  ),
                   const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () async {
@@ -393,6 +442,40 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               ),
             ),
             actions: [
+              TextButton(
+                onPressed: isSaving ? null : () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Confirmer la suppression'),
+                      content: const Text('Êtes-vous sûr de vouloir supprimer cet article définitevement ?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Supprimer', style: TextStyle(color: Colors.red))),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    setDialogState(() => isSaving = true);
+                    final auth = context.read<AuthProvider>();
+                    final success = await ApiService.deleteMenuItem(int.parse(item.id), int.parse(auth.user!.id), token: auth.token);
+                    if (success) {
+                      _fetchMenuItems();
+                      if (context.mounted) {
+                        Navigator.pop(context); // close edit dialog
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Article supprimé avec succès'), backgroundColor: Colors.green));
+                      }
+                    } else {
+                      setDialogState(() => isSaving = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de la suppression'), backgroundColor: Colors.red));
+                      }
+                    }
+                  }
+                },
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Supprimer'),
+              ),
               TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
               ElevatedButton(
                 onPressed: isSaving ? null : () async {
@@ -405,6 +488,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                     category: categoryController.text,
                     imageFile: pickedImage,
                     userId: context.read<AuthProvider>().user?.id.toString(),
+                    isAvailable: isAvailable,
                   );
                   if (success) {
                     _fetchMenuItems();
@@ -413,7 +497,8 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                     setDialogState(() => isSaving = false);
                   }
                 },
-                child: isSaving ? const CircularProgressIndicator() : Text(l10n.save),
+                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
+                child: isSaving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Text(l10n.save),
               ),
             ],
           );

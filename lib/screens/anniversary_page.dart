@@ -6,6 +6,7 @@ import '../providers/reservation_provider.dart';
 import '../models/reservation.dart';
 import '../models/cafe.dart';
 import '../services/api_service.dart';
+import '../widgets/time_picker.dart';
 
 class AnniversaryPage extends StatefulWidget {
   const AnniversaryPage({super.key});
@@ -60,9 +61,9 @@ class _AnniversaryPageState extends State<AnniversaryPage> {
   }
 
   Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 18, minute: 0),
+    final TimeOfDay? picked = await showReservationTimePicker(
+      context,
+      initialTime: _selectedTime ?? const TimeOfDay(hour: 18, minute: 0),
     );
     if (picked != null && picked != _selectedTime) {
       setState(() {

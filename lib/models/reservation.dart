@@ -63,5 +63,37 @@ class Reservation {
     };
   }
 
+  Reservation copyWith({
+    String? id,
+    String? cafeId,
+    String? cafeName,
+    String? userId,
+    DateTime? dateTime,
+    int? numberOfPeople,
+    String? specialRequests,
+    double? depositAmount,
+    String? type,
+    String? status,
+    String? paymentIntentId,
+    String? clientName,
+    String? clientPhone,
+  }) {
+    return Reservation(
+      id: id ?? this.id,
+      cafeId: cafeId ?? this.cafeId,
+      cafeName: cafeName ?? this.cafeName,
+      userId: userId ?? this.userId,
+      dateTime: dateTime ?? this.dateTime,
+      numberOfPeople: numberOfPeople ?? this.numberOfPeople,
+      specialRequests: specialRequests ?? this.specialRequests,
+      depositAmount: depositAmount ?? this.depositAmount,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      paymentIntentId: paymentIntentId ?? this.paymentIntentId,
+      clientName: clientName ?? this.clientName,
+      clientPhone: clientPhone ?? this.clientPhone,
+    );
+  }
+
   String get displayType => type == 'birthday' ? 'Anniversaire' : 'Table';
 }

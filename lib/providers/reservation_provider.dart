@@ -49,6 +49,26 @@ class ReservationProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateStatus(int id, String status, {String? currentFilterStatus}) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final success = await ApiService.updateReservationStatus(id, status);
+      if (success) {
+        // After successful status update, reload from server to ensure correct filtering/tabs
+        await fetchReservations(status: currentFilterStatus);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error updating reservation status: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void addReservation(Reservation reservation) {
     _reservations.insert(0, reservation);
     notifyListeners();

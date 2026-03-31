@@ -21,8 +21,8 @@ class ApiService {
   // Replace with your Hostinger subdomain URL once uploaded
   // For mobile testing (USB), use your PC's local IP address
   // Changed to local backend
-  static const String baseUrl = 'https://api.sfw-digital.com/api'; 
-  // static const String baseUrl = 'http://192.168.100.40:8000/api'; 
+  // static const String baseUrl = 'https://api.sfw-digital.com/api'; 
+  static const String baseUrl = 'http://192.168.100.40:8000/api'; 
   static String get storageUrl {
     if (baseUrl.endsWith('/api')) {
       return '${baseUrl.substring(0, baseUrl.length - 4)}/storage';
@@ -250,6 +250,15 @@ class ApiService {
     throw Exception('Failed to load menu items');
   }
 
+  static Future<bool> toggleReservationsBlock(String cafeId, bool blocked) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/cafes/$cafeId/toggle-reservations'),
+      headers: _headers,
+      body: jsonEncode({'reservations_blocked': blocked}),
+    );
+    return response.statusCode == 200;
+  }
+
   // Orders
   static Future<List<OrderItem>> getOrders({String? status, String? type}) async {
     String url = '$baseUrl/orders';
@@ -298,6 +307,15 @@ class ApiService {
       body: jsonEncode(reservationData),
     );
     return response.statusCode == 201;
+  }
+
+  static Future<bool> updateReservationStatus(int id, String status) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reservations/$id/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return response.statusCode == 200;
   }
 
   // Events
@@ -479,7 +497,7 @@ class ApiService {
     return response.statusCode == 201;
   }
 
-  static Future<bool> updateMenuItem(String id, {String? name, String? description, double? price, String? category, File? imageFile, String? userId}) async {
+  static Future<bool> updateMenuItem(String id, {String? name, String? description, double? price, String? category, File? imageFile, String? userId, bool? isAvailable}) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/menu-items/$id'));
     request.headers.addAll({
       if (_token != null) 'Authorization': 'Bearer $_token',
@@ -491,6 +509,7 @@ class ApiService {
     if (price != null) request.fields['price'] = price.toString();
     if (category != null) request.fields['category'] = category;
     if (userId != null) request.fields['user_id'] = userId;
+    if (isAvailable != null) request.fields['is_available'] = isAvailable.toString();
 
     if (imageFile != null) {
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -731,11 +750,24 @@ class ApiService {
   }
 
 
-  static Future<bool> updateOrderStatus(String id, String status) async {
+  static Future<bool> updateOrderStatus(String id, String status, {int? rating, String? reason, String? ratingComment}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/orders/$id/status'),
       headers: _headers,
-      body: jsonEncode({'status': status}),
+      body: jsonEncode({
+        'status': status,
+        if (rating != null) 'rating': rating,
+        if (reason != null) 'cancellation_reason': reason,
+        if (ratingComment != null) 'rating_comment': ratingComment,
+      }),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> takeOrder(String id) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/orders/$id/take'),
+      headers: _headers,
     );
     return response.statusCode == 200;
   }
@@ -776,4 +808,25 @@ class ApiService {
     );
     return jsonDecode(response.body);
   }
-}
+
+  static Future<bool> deleteMenuItem(int id, int userId, {String? token}) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/menu-items/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'user_id': userId}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> updateFcmToken(String fcmToken) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/fcm-token'),
+      headers: _headers,
+      body: jsonEncode({'fcm_token': fcmToken}),
+    );
+    return response.statusCode == 200;
+  }
+} // End of file

@@ -28,7 +28,7 @@ class MenuItem {
       imageUrl: json['image_url'] ?? '',
       category: json['category'] is Map ? json['category']['name'] : (json['category'] ?? ''),
       cafeId: json['cafe_id'].toString(),
-      available: json['available'] ?? true,
+      available: json['is_available'] != null ? json['is_available'] == true || json['is_available'] == 1 : true,
     );
   }
 

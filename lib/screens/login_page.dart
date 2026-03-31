@@ -225,8 +225,24 @@ class _LoginPageState extends State<LoginPage> {
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
             ElevatedButton(
               onPressed: isResetting ? null : () async {
-                if (passwordController.text != confirmController.text) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les mots de passe ne correspondent pas')));
+                final pwd = passwordController.text;
+                // Validate password norms: min 8 chars, at least 1 letter and 1 digit
+                final hasMinLength = pwd.length >= 8;
+                final hasLetter = pwd.contains(RegExp(r'[a-zA-Z]'));
+                final hasDigit = pwd.contains(RegExp(r'[0-9]'));
+
+                if (!hasMinLength || !hasLetter || !hasDigit) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                if (pwd != confirmController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les mots de passe ne correspondent pas'), backgroundColor: Colors.red));
                   return;
                 }
                 setDialogState(() => isResetting = true);
@@ -234,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                   await context.read<AuthProvider>().resetPassword(
                     email: email,
                     token: codeController.text,
-                    password: passwordController.text,
+                    password: pwd,
                     passwordConfirmation: confirmController.text,
                   );
                   if (mounted) {

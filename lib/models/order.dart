@@ -17,6 +17,15 @@ class OrderItem {
   final String? deliveryLocation;
   final String? clientPhone;
   final String? clientName;
+  final String? paymentMethod;
+  final String? deliveryId;
+  final int? rating;
+  final String? cancellationReason;
+  final DateTime? readyAt;
+  final DateTime? reachedAt;
+  final String? deliveryName;
+  final String? deliveryPhone;
+  final String? ratingComment;
 
   OrderItem({
     required this.id,
@@ -32,6 +41,15 @@ class OrderItem {
     this.deliveryLocation,
     this.clientPhone,
     this.clientName,
+    this.paymentMethod,
+    this.deliveryId,
+    this.rating,
+    this.cancellationReason,
+    this.readyAt,
+    this.reachedAt,
+    this.deliveryName,
+    this.deliveryPhone,
+    this.ratingComment,
   });
 
   OrderItem copyWith({
@@ -48,6 +66,15 @@ class OrderItem {
     String? deliveryLocation,
     String? clientPhone,
     String? clientName,
+    String? paymentMethod,
+    String? deliveryId,
+    int? rating,
+    String? cancellationReason,
+    DateTime? readyAt,
+    DateTime? reachedAt,
+    String? deliveryName,
+    String? deliveryPhone,
+    String? ratingComment,
   }) {
     return OrderItem(
       id: id ?? this.id,
@@ -63,6 +90,15 @@ class OrderItem {
       deliveryLocation: deliveryLocation ?? this.deliveryLocation,
       clientPhone: clientPhone ?? this.clientPhone,
       clientName: clientName ?? this.clientName,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      deliveryId: deliveryId ?? this.deliveryId,
+      rating: rating ?? this.rating,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      readyAt: readyAt ?? this.readyAt,
+      reachedAt: reachedAt ?? this.reachedAt,
+      deliveryName: deliveryName ?? this.deliveryName,
+      deliveryPhone: deliveryPhone ?? this.deliveryPhone,
+      ratingComment: ratingComment ?? this.ratingComment,
     );
   }
 
@@ -98,8 +134,17 @@ class OrderItem {
       agencyId: json['agency_id']?.toString(),
       commissionAmount: double.tryParse(json['commission_amount']?.toString() ?? '0'),
       deliveryLocation: json['delivery_location'],
-      clientPhone: json['user']?['phone']?.toString(),
-      clientName: json['user']?['name']?.toString(),
+      clientPhone: json['user']?['phone']?.toString() ?? json['client_phone']?.toString(),
+      clientName: json['user']?['name']?.toString() ?? json['client_name']?.toString(),
+      paymentMethod: json['payment_method'],
+      deliveryId: json['delivery_id']?.toString(),
+      rating: json['rating'] != null ? int.tryParse(json['rating'].toString()) : null,
+      cancellationReason: json['cancellation_reason'],
+      readyAt: json['ready_at'] != null ? DateTime.parse(json['ready_at']) : null,
+      reachedAt: json['reached_at'] != null ? DateTime.parse(json['reached_at']) : null,
+      deliveryName: json['delivery']?['name']?.toString(),
+      deliveryPhone: json['delivery']?['phone']?.toString(),
+      ratingComment: json['rating_comment']?.toString(),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../services/notification_service.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
@@ -45,6 +46,7 @@ class AuthProvider with ChangeNotifier {
         _token = token;
         _user = User.fromJson(jsonDecode(userJson));
         ApiService.setToken(token);
+        _updateFcmToken();
       }
     } catch (e) {
       // If restoration fails, just stay logged out
@@ -163,11 +165,26 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       // Save persistently
       _saveSession(_token!, _user!);
+      
+      // Update FCM token on server
+      _updateFcmToken();
+      
       return true;
     }
     _isLoading = false;
     notifyListeners();
     return false;
+  }
+
+  Future<void> _updateFcmToken() async {
+    try {
+      final fcmToken = await NotificationService.getToken();
+      if (fcmToken != null) {
+        await ApiService.updateFcmToken(fcmToken);
+      }
+    } catch (e) {
+      debugPrint('Error updating FCM token: $e');
+    }
   }
 
   Future<bool> register(String name, String email, String password,

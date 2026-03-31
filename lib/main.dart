@@ -16,9 +16,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:store_app/l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
 import 'providers/navigation_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await NotificationService.initialize();
   await initializeDateFormatting('fr_FR', null);
 
   // Create AuthProvider early so we can restore the session before showing UI

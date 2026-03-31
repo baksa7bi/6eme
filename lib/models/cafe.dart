@@ -10,6 +10,7 @@ class Cafe {
   final double longitude;
   final String description;
   final List<String> openingHours;
+  bool reservationsBlocked;
 
   Cafe({
     required this.id,
@@ -21,6 +22,7 @@ class Cafe {
     required this.longitude,
     required this.description,
     required this.openingHours,
+    this.reservationsBlocked = false,
   });
 
   factory Cafe.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class Cafe {
       longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
       description: json['description']?.toString() ?? '',
       openingHours: hours,
+      reservationsBlocked: json['reservations_blocked'] == true || json['reservations_blocked'] == 1,
     );
   }
 

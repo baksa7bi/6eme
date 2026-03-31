@@ -93,13 +93,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   }
                   await favProvider.toggleFavorite(widget.item);
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(favProvider.isFavorite(widget.item.id)
-                          ? '❤️ Ajouté aux favoris'
-                          : 'Retiré des favoris'),
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                    ));
+                 
                   }
                 },
               ),
@@ -324,13 +318,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   }
                   await favProvider.toggleFavorite(widget.item);
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(favProvider.isFavorite(widget.item.id)
-                          ? '❤️ Ajouté aux favoris'
-                          : 'Retiré des favoris'),
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                    ));
+                  
                   }
                 },
                 child: Container(
@@ -356,15 +344,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   onPressed: widget.item.available
                       ? () {
                           cart.addItem(widget.item);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  '🛒 ${widget.item.name} ajouté au panier'),
-                              duration: const Duration(seconds: 1),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: theme.primaryColor,
-                            ),
-                          );
+                        
                           Navigator.pop(context);
                         }
                       : null,
