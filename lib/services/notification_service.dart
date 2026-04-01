@@ -60,7 +60,7 @@ class NotificationService {
   }
 
   static Future<void> _showLocalNotification(String title, String body, Map<String, dynamic> data) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'delivery_channel',
       'Nouvelles Livraisons',
       channelDescription: 'Alarmes pour les nouvelles commandes de livraison',
@@ -74,7 +74,7 @@ class NotificationService {
       category: AndroidNotificationCategory.call,
       visibility: NotificationVisibility.public,
     );
-    const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
+    NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
     await _localNotifs.show(
       id: 888, 
       title: title, 
