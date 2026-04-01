@@ -626,6 +626,8 @@ class _CartPageState extends State<CartPage> {
 
       if (successCount == totalCafeOrders) {
         cart.clear();
+        setState(() => _selectedCoupons.clear());
+        _loadInitialData(); // REFRESH from database
         _showSuccessDialog();
       } else if (successCount > 0) {
         ScaffoldMessenger.of(context).showSnackBar(

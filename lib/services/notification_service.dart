@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -49,10 +52,7 @@ class NotificationService {
       
       _showLocalNotification(title, body, message.data);
 
-      // Start alarm if it's a delivery order
-      if (message.data['type'] == 'delivery' || message.data['status'] == 'En attente') {
-        FlutterRingtonePlayer().playAlarm(looping: true, volume: 1.0, asAlarm: true);
-      }
+      // NO ALARM HERE: User requested standard notification ONLY while already in-app
     });
 
     // Handle background messages
@@ -65,11 +65,13 @@ class NotificationService {
       'Nouvelles Livraisons',
       channelDescription: 'Alarmes pour les nouvelles commandes de livraison',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       fullScreenIntent: true,
       playSound: true,
-      ongoing: true, // As per guide: persistent notification
-      category: AndroidNotificationCategory.call, // High visibility
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+      ongoing: true,
+      category: AndroidNotificationCategory.call,
       visibility: NotificationVisibility.public,
     );
     const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
@@ -83,7 +85,19 @@ class NotificationService {
   }
 
   static Future<String?> getToken() async {
-    return await _fcm.getToken();
+    try {
+      if (Platform.isIOS) {
+        try {
+          await _fcm.getAPNSToken();
+        } catch (e) {
+          debugPrint("FCM APNS Token not ready: $e");
+        }
+      }
+      return await _fcm.getToken();
+    } catch (e) {
+      debugPrint("Error getting FCM token: $e");
+      return null;
+    }
   }
 
   static void stopAlarm() {
@@ -94,15 +108,19 @@ class NotificationService {
 // Background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // IMPORTANT: For data-only messages, we MUST show the notification manually here
-  // even in the background.
   final title = message.data['title'] ?? 'Nouvelle commande';
   final body = message.data['body'] ?? 'Vous avez une livraison en attente !';
   
   NotificationService._showLocalNotification(title, body, message.data);
 
+  // Play a ringing sound that ignores silent mode (on some devices) and loops
   if (message.data['type'] == 'delivery' || message.data['status'] == 'En attente') {
-     FlutterRingtonePlayer().playAlarm(looping: true, volume: 1.0, asAlarm: true);
+    FlutterRingtonePlayer().play(
+      android: AndroidSounds.ringtone,
+      ios: IosSounds.glass,
+      looping: true,
+      volume: 1.0,
+      asAlarm: true,
+    );
   }
-  print("Handling a background message: ${message.messageId}");
 }

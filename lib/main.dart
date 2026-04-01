@@ -21,8 +21,8 @@ import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await NotificationService.initialize();
+    await Firebase.initializeApp();
+    await NotificationService.initialize();
   await initializeDateFormatting('fr_FR', null);
 
   // Create AuthProvider early so we can restore the session before showing UI

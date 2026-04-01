@@ -26,7 +26,7 @@ class User {
       name: json['name'],
       phone: json['phone']?.toString(),
       address: json['address']?.toString(),
-      role: json['role']?.toString() ?? 'client',
+      role: json['role']?.toString().trim().toLowerCase() ?? 'client',
       cafeId: json['cafe_id'] != null ? int.tryParse(json['cafe_id'].toString()) : null,
       emailVerifiedAt: json['email_verified_at']?.toString(),
     );
@@ -45,10 +45,10 @@ class User {
     };
   }
 
-  bool get isAdmin => role == 'admin';
-  bool get isManager => role == 'manager';
-  bool get isDelivery => role == 'delivery';
-  bool get isContentManager => role == 'content_manager' || role == 'admin';
-  bool get isClient => role == 'client';
+  bool get isAdmin => role?.toLowerCase() == 'admin';
+  bool get isManager => role?.toLowerCase() == 'manager';
+  bool get isDelivery => role?.toLowerCase() == 'delivery';
+  bool get isContentManager => role?.toLowerCase() == 'content_manager' || isAdmin;
+  bool get isClient => role?.toLowerCase() == 'client';
   bool get isEmailVerified => emailVerifiedAt != null;
 }
