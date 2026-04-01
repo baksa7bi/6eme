@@ -279,12 +279,13 @@ class _DeliveryOrdersManagerDialogState extends State<DeliveryOrdersManagerDialo
     super.initState();
     _orders = List.from(widget.orders);
     _pageController = PageController();
-    FlutterRingtonePlayer().playAlarm(looping: true, volume: 1.0, asAlarm: true);
+    // NO ALARM HERE: Alarm is only for background notifications.
   }
 
   @override
   void dispose() {
-    FlutterRingtonePlayer().stop();
+    // Keep stop() as a safety measure
+    NotificationService.stopAlarm();
     _pageController.dispose();
     super.dispose();
   }
