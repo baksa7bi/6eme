@@ -1,18 +1,25 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/widgets.dart';
+// Hide firebase_messaging's NotificationSettings to avoid clash with
+// the alarm package's NotificationSettings class.
+import 'package:firebase_messaging/firebase_messaging.dart'
+    hide NotificationSettings;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:alarm/alarm.dart';
 
 class NotificationService {
   static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _localNotifs = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _localNotifs =
+      FlutterLocalNotificationsPlugin();
 
-  // Channel ID bumped to v2 — forces Android to register a fresh channel
-  // with correct sound settings (old channel config is immutable once created).
-  static const String _channelId = 'delivery_channel_v2';
+  // Regular (non-alarm) channel for promotions / order status updates
+  static const String _normalChannelId = 'normal_channel';
 
   static Future<void> initialize() async {
+    // ── 1. Alarm package ──────────────────────────────────────────────────────
+    await Alarm.init();
+
+    // ── 2. flutter_local_notifications (for regular notifications) ────────────
     const AndroidInitializationSettings initAndroid =
         AndroidInitializationSettings('@mipmap/launcher_icon');
     const DarwinInitializationSettings initIOS = DarwinInitializationSettings(
@@ -25,128 +32,181 @@ class NotificationService {
 
     await _localNotifs.initialize(
       settings: initSettings,
-      onDidReceiveNotificationResponse: (response) {
-        stopAlarm();
-      },
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+      onDidReceiveNotificationResponse: (response) => stopAlarm(),
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationResponse,
     );
 
     final androidPlugin = _localNotifs
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
 
-    // Delete stale channels so their immutable sound/importance settings
-    // don't silently override what we set below.
-    await androidPlugin?.deleteNotificationChannel(channelId: 'delivery_channel');
-    await androidPlugin?.deleteNotificationChannel(channelId: 'delivery_channel_v2');
+    // Delete old channels (clean up from previous versions)
+    for (final id in ['delivery_channel', 'delivery_channel_v2', 'delivery_channel_v3']) {
+      await androidPlugin?.deleteNotificationChannel(channelId: id);
+    }
 
-    // Re-create channel fresh with sound + max importance.
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      _channelId,
-      'Nouvelles Livraisons',
-      description: 'Alarmes pour les nouvelles commandes de livraison',
-      importance: Importance.max,
+    // Create the standard channel for non-alarm notifications
+    const AndroidNotificationChannel normalChannel = AndroidNotificationChannel(
+      _normalChannelId,
+      'Notifications standard',
+      description: 'Notifications générales',
+      importance: Importance.defaultImportance,
       playSound: true,
       enableVibration: true,
       showBadge: true,
     );
-    await androidPlugin?.createNotificationChannel(channel);
+    await androidPlugin?.createNotificationChannel(normalChannel);
 
+    // ── 3. FCM permissions ────────────────────────────────────────────────────
     await _fcm.requestPermission(
       alert: true,
-      announcement: false,
       badge: true,
-      carPlay: false,
       criticalAlert: true,
-      provisional: false,
       sound: true,
     );
 
-    // Foreground message handler — show local notification with alarm
+    // ── 4. Foreground message handler ─────────────────────────────────────────
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final title = message.data['title'] ?? 'Nouvelle commande';
-      final body = message.data['body'] ?? 'Vous avez une livraison en attente !';
-      _showLocalNotification(title, body, message.data);
+      final title = message.data['title'] ?? 'Nouvelle notification';
+      final body = message.data['body'] ?? '';
+      _showNotification(title, body, message.data);
     });
 
+    // ── 5. Background / terminated message handler ────────────────────────────
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  static Future<void> _showLocalNotification(
+  // ─── Core dispatcher ────────────────────────────────────────────────────────
+  static Future<void> _showNotification(
       String title, String body, Map<String, dynamic> data) async {
-    final List<AndroidNotificationAction> actions = [
-      const AndroidNotificationAction(
-        'stop_alarm',
-        'STOP ALARM',
-        showsUserInterface: true,
-        cancelNotification: true,
-      ),
-    ];
+    final bool isManagerAlert =
+        data['type'] == 'delivery' || data['status'] == 'En attente';
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      _channelId,
-      'Nouvelles Livraisons',
-      channelDescription: 'Alarmes pour les nouvelles commandes de livraison',
-      importance: Importance.max,
-      priority: Priority.max,
-      fullScreenIntent: true,
-      playSound: true,
-      // Do NOT set a custom sound URI here — let the channel default play.
-      // A wrong/missing sound URI silently falls back to no sound.
-      additionalFlags: Int32List.fromList([4]), // FLAG_INSISTENT: loops sound until cancelled
-      enableVibration: true,
-      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-      ongoing: false,
-      category: AndroidNotificationCategory.call,
-      visibility: NotificationVisibility.public,
-      actions: actions,
+    if (isManagerAlert) {
+      await _triggerAlarm(title, body);
+    } else {
+      await _showRegularNotification(title, body, data);
+    }
+  }
+
+  // ─── Alarm (lock-screen, looping sound, foreground service) ─────────────────
+  static Future<void> _triggerAlarm(String title, String body) async {
+    // Use a time-based ID so multiple orders each get their own alarm slot.
+    // Clamped to int32 range to satisfy the alarm package.
+    final int alarmId = DateTime.now().millisecondsSinceEpoch ~/ 1000 % 100000;
+
+    final alarmSettings = AlarmSettings(
+      id: alarmId,
+      // Trigger almost immediately
+      dateTime: DateTime.now().add(const Duration(seconds: 1)),
+      // Flutter asset path (registered in pubspec.yaml → assets/audio/)
+      assetAudioPath: 'assets/audio/alarm.wav',
+      loopAudio: true,
+      vibrate: true,
+      androidFullScreenIntent: true,
+      notificationSettings: NotificationSettings(
+        title: title,
+        body: body,
+        stopButton: 'STOP ALARM',
+      ),
     );
 
-    final NotificationDetails platformDetails =
-        NotificationDetails(android: androidDetails);
+    await Alarm.set(alarmSettings: alarmSettings);
+  }
+
+  // ─── Regular local notification (non-delivery) ───────────────────────────────
+  static Future<void> _showRegularNotification(
+      String title, String body, Map<String, dynamic> data) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      _normalChannelId,
+      'Notifications standard',
+      channelDescription: 'Notifications générales',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      playSound: true,
+      enableVibration: true,
+      visibility: NotificationVisibility.public,
+    );
 
     await _localNotifs.show(
-      id: 888,
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title: title,
       body: body,
-      notificationDetails: platformDetails,
+      notificationDetails: const NotificationDetails(android: androidDetails),
       payload: data.toString(),
     );
   }
 
+  // ─── Public API ──────────────────────────────────────────────────────────────
   static Future<String?> getToken() async {
     try {
       if (Platform.isIOS) {
         try {
           await _fcm.getAPNSToken();
         } catch (e) {
-          debugPrint("FCM APNS Token not ready: $e");
+          debugPrint('FCM APNS Token not ready: $e');
         }
       }
       return await _fcm.getToken();
     } catch (e) {
-      debugPrint("Error getting FCM token: $e");
+      debugPrint('Error getting FCM token: $e');
       return null;
     }
   }
 
-  /// Stops the alarm by cancelling the notification.
-  /// FLAG_INSISTENT sound is owned by the OS — cancelling the notification
-  /// is the only reliable way to stop the looping sound.
+  /// Stops ALL active alarms and dismisses any lingering local notifications.
   static Future<void> stopAlarm() async {
-    await _localNotifs.cancel(id: 888);
+    await Alarm.stopAll();
+    await _localNotifs.cancelAll();
   }
 }
 
-// Called when user taps the notification or STOP ALARM action in the background.
+// ─── Background callbacks (top-level, separate isolate) ───────────────────────
+
 @pragma('vm:entry-point')
 void _onBackgroundNotificationResponse(NotificationResponse response) {
+  // Can only call sync-safe code here; alarm stop is handled by the alarm
+  // package's own "Stop" button action.
   NotificationService.stopAlarm();
 }
 
-// Called when a Firebase message arrives while the app is terminated/background.
+/// Handles FCM messages while the app is terminated or in the background.
+/// Runs in its own isolate → must re-init the alarm package before using it.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final title = message.data['title'] ?? 'Nouvelle commande';
-  final body = message.data['body'] ?? 'Vous avez une livraison en attente !';
-  NotificationService._showLocalNotification(title, body, message.data);
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final data = message.data;
+  final bool isManagerAlert =
+      data['type'] == 'delivery' || data['status'] == 'En attente';
+
+  if (isManagerAlert) {
+    // Re-init alarm in this isolate before using it
+    await Alarm.init(showDebugLogs: false);
+
+    final title = data['title'] ?? 'Nouvelle commande';
+    final body = data['body'] ?? 'Vous avez une nouvelle livraison !';
+
+    final int alarmId =
+        DateTime.now().millisecondsSinceEpoch ~/ 1000 % 100000;
+
+    final alarmSettings = AlarmSettings(
+      id: alarmId,
+      dateTime: DateTime.now().add(const Duration(seconds: 1)),
+      assetAudioPath: 'assets/audio/alarm.wav',
+      loopAudio: true,
+      vibrate: true,
+      androidFullScreenIntent: true,
+      notificationSettings: NotificationSettings(
+        title: title,
+        body: body,
+        stopButton: 'STOP ALARM',
+      ),
+    );
+
+    await Alarm.set(alarmSettings: alarmSettings);
+  }
+  // Non-delivery notifications in background: FCM handles display natively
+  // via the `notification` payload from the server.
 }
