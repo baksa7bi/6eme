@@ -80,8 +80,7 @@ class NotificationService {
   // ─── Core dispatcher ────────────────────────────────────────────────────────
   static Future<void> _showNotification(
       String title, String body, Map<String, dynamic> data) async {
-    final bool isManagerAlert =
-        data['type'] == 'delivery' || data['status'] == 'En attente';
+    final bool isManagerAlert = data['status'] == 'En attente';
 
     if (isManagerAlert) {
       await _triggerAlarm(title, body);
@@ -178,8 +177,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final data = message.data;
-  final bool isManagerAlert =
-      data['type'] == 'delivery' || data['status'] == 'En attente';
+  final bool isManagerAlert = data['status'] == 'En attente';
 
   if (isManagerAlert) {
     // Re-init alarm in this isolate before using it
@@ -206,7 +204,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
 
     await Alarm.set(alarmSettings: alarmSettings);
+  } else {
+    // Manually show the regular notification for Users and Delivery Guys 
+    // to ensure visibility if the server sends it as a 'data only' notification.
+    final title = data['title'] ?? 'Mise à jour de commande';
+    final body = data['body'] ?? '';
+    NotificationService._showRegularNotification(title, body, data);
   }
-  // Non-delivery notifications in background: FCM handles display natively
-  // via the `notification` payload from the server.
 }
